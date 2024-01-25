@@ -1,11 +1,12 @@
 "use client";
 //almost done, only notification need to be added
 
-import React, { useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Notification from '@/components/notification.js/Notification';
 
 function isEmailValid(email) {
   // Regular expression for a basic email validation
@@ -19,7 +20,12 @@ export default function LogIn() {
 
   const [data, setData] = useState({ email: "", password: "" });
   const [isLoading, setLoading] = useState(false);
+  const [notiData, setNotiData] = useState({ show: false, message: "", type: "" });
   const router = useRouter();
+
+  function closeNoti() {
+    setNotiData({ show: false, message: "", type: "" });
+  }
 
   function changeHandler(e) {
     setData({
@@ -28,17 +34,22 @@ export default function LogIn() {
   }
 
   async function clickHandler() {
+    setLoading(true);
     for (let key in data) {
       if (data[key] == "") {
-        alert("All fields must be filled");
+        // alert("All fields must be filled");
+        setLoading(false);
+        setNotiData({ show: true, message: "All fields must be filled", type: "Message" });
         return;
       }
     }
     if (!isEmailValid(data.email)) {
-      alert("Enter a valid email");
+      // alert("Enter a valid email");
+      setLoading(false);
+      setNotiData({show:true,message:"Enter a valid email",type:"Message"});
       return;
     }
-    setLoading(true);
+    
     const result = await signIn("credentials", { redirect: false, email: data.email, password: data.password });
     setLoading(false);
     if (result.ok) {
@@ -46,38 +57,46 @@ export default function LogIn() {
       // console.log("login successfull");
     }
     else {
-      console.log("Enter valid credentials");
+      // console.log("Enter valid credentials");
+      setNotiData({show:true,message:"Enter valid credentials",type:"Failed"});
     }
   }
 
   return (
-    <div className="h-screen w-screen flex justify-center items-center bg-cover bg-center bg-[url('/images/login-sm2.jpg')] sm:bg-[url('/images/login-lg2.jpg')] opacity-100">
-      <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl sm:bg-cyan-900  backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'>
-        <h1 className='text-center text-3xl font-extrabold text-white pb-8'>User Login</h1>
-        <div className=' flex flex-col p-4 gap-6'>
-          <input className='p-1 rounded-md' type="email" name="email" value={data.email} placeholder='Email' onChange={changeHandler} />
-          <input className='p-1 rounded-md' type="password" name="password" value={data.password} placeholder='Password' onChange={changeHandler} />
+    <Fragment>
+      <div className="h-screen w-screen flex justify-center items-center bg-cover bg-center bg-[url('/images/login-sm2.jpg')] sm:bg-[url('/images/login-lg2.jpg')] opacity-100">
+        <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl sm:bg-cyan-900  backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'>
+          <h1 className='text-center text-3xl font-extrabold text-white pb-8'>User Login</h1>
+          <div className=' flex flex-col p-4 gap-6'>
+            <input className='p-1 rounded-md' type="email" name="email" value={data.email} placeholder='Email' onChange={changeHandler} />
+            <input className='p-1 rounded-md' type="password" name="password" value={data.password} placeholder='Password' onChange={changeHandler} />
 
-          {isLoading ?
-            (
-              <button className='bg-blue-500 p-2 rounded-md text-white font-semibold animate-pulse' disabled>Processing...</button>
-            ) :
-            (<button className='bg-blue-500 p-2 rounded-md text-white font-semibold ' onClick={clickHandler}>Login</button>)
-          }
+            {isLoading ?
+              (
+                <button className='bg-blue-500 p-2 rounded-md text-white font-semibold animate-pulse' disabled>Processing...</button>
+              ) :
+              (<button className='bg-blue-500 p-2 rounded-md text-white font-semibold ' onClick={clickHandler}>Login</button>)
+            }
 
-          {/* or seperator */}
-          <div className='flex justify-between items-baseline'>
-            <div className='w-1/3 h-0.5 bg-white'></div>
-            <span className='text-white text-md'>or</span>
-            <div className='w-1/3 h-0.5 bg-white'></div>
+            {/* or seperator */}
+            <div className='flex justify-between items-baseline'>
+              <div className='w-1/3 h-0.5 bg-white'></div>
+              <span className='text-white text-md'>or</span>
+              <div className='w-1/3 h-0.5 bg-white'></div>
+            </div>
+            {/* other login options */}
+            <button className='bg-green-800 p-2 rounded-md text-white font-semibold flex justify-center gap-2 items-center' onClick={() => { signIn("google") }}>Login with Google <span><FcGoogle className='scale-125' /></span> </button>
+
+            <button className='bg-blue-500 p-2 rounded-md text-white font-semibold '><Link href={"/signup"}>Go to Signup page</Link></button>
           </div>
-          {/* other login options */}
-          <button className='bg-green-800 p-2 rounded-md text-white font-semibold flex justify-center gap-2 items-center' onClick={() => { signIn("google") }}>Login with Google <span><FcGoogle className='scale-125' /></span> </button>
-
-          <button className='bg-blue-500 p-2 rounded-md text-white font-semibold '><Link href={"/signup"}>Go to Signup page</Link></button>
         </div>
       </div>
-    </div>
+
+      {/* Notification................ */}
+      {notiData.show &&
+        <Notification message={notiData.message} type={notiData.type} onClick={closeNoti} />
+      }
+    </Fragment>
   );
 }
 

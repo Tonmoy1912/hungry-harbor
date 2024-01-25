@@ -1,10 +1,11 @@
 "use client";
-//almost done, only notification need to be added
+//completely done
 
-import React, { useState } from 'react'
+import React, { Fragment, useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
+import Notification from '@/components/notification.js/Notification';
 
 function isEmailValid(email) {
   // Regular expression for a basic email validation
@@ -18,6 +19,7 @@ export default function SignUp() {
 
   const [data, setData] = useState({ email: "", password: "", confirm_password: "", name: "" });
   const [isLoading, setLoading] = useState(false);
+  const [notiData,setNotiData]=useState({show:false,message:"",type:""});
 
   function changeHandler(e) {
     setData({
@@ -25,22 +27,33 @@ export default function SignUp() {
     });
   }
 
+  function closeNoti(){
+    setNotiData({show:false,message:"",type:""});
+  }
+
   function clickHandler() {
+    setLoading(true);
     for (let key in data) {
       if (data[key] == "") {
-        alert("All fields must be filled");
+        // alert("All fields must be filled");
+        setLoading(false);
+        setNotiData({show:true,message:"All fields must be filled",type:"Message"});
         return;
       }
     }
     if (!isEmailValid(data.email)) {
-      alert("Enter a valid email");
+      // alert("Enter a valid email");
+      setLoading(false);
+      setNotiData({show:true,message:"Enter a valid email",type:"Message"});
       return;
     }
     if (data.password != data.confirm_password) {
-      alert("Password doesn't match");
+      // alert("Password doesn't match");
+      setLoading(false);
+      setNotiData({show:true,message:"Password doesn't match",type:"Message"});
       return;
     }
-    setLoading(true);
+    
     //backend call for signup
     fetch("/api/signup", {
       cache: "no-store",
@@ -53,16 +66,20 @@ export default function SignUp() {
       .then(data => {
         setLoading(false);
         if (data.ok) {
-          console.log("SignUp successfull. Now login with email and password");
+          // console.log("SignUp successfull. Now login with email and password");
+          setNotiData({show:true,message:"SignUp successfull. Now login with email and password",type:"Success"});
           setData({ email: "", password: "", confirm_password: "", name: "" });
         }
         else {
-          console.log(data.message);
+          // console.log(data.message);
+          setNotiData({show:true,message:data.message,type:"Failed"});
         }
-      });
+      })
+      .catch((err)=>{setLoading(false)});
   }
 
   return (
+    <Fragment>
     <div className="h-screen w-screen flex justify-center items-center bg-cover bg-center bg-[url('/images/login-sm2.jpg')] sm:bg-[url('/images/login-lg2.jpg')]  opacity-100">
       <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl  sm:bg-cyan-900 backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'>
         <h1 className='text-center text-3xl font-extrabold text-white pb-6'>User Signup</h1>
@@ -91,6 +108,12 @@ export default function SignUp() {
         </div>
       </div>
     </div>
+
+    {/* Notification................ */}
+    {notiData.show && 
+      <Notification message={notiData.message} type={notiData.type}  onClick={closeNoti}/>
+    }
+    </Fragment>
   );
 }
 
