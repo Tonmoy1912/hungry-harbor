@@ -1,1 +1,1 @@
-all notification signin and login done
+all auth functionality done and cleaned the project

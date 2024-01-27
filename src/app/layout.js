@@ -1,6 +1,5 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/navigation/Navbar";
 import SessionProvider from "@/components/session/SessionProvider"
 import { getServerSession } from "next-auth";
 import RecoilRoot from "@/components/recoilState/RecoilState"
@@ -19,9 +18,7 @@ export default async function RootLayout({ children }) {
       <body className={`${inter.className} `}>
         <SessionProvider session={session}>
           <RecoilRoot>
-            <Navbar>
-              {children}
-            </Navbar>
+            {children}
           </RecoilRoot>
         </SessionProvider>
       </body>

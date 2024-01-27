@@ -81,7 +81,8 @@ export default function SignUp() {
   return (
     <Fragment>
     <div className="h-screen w-screen flex justify-center items-center bg-cover bg-center bg-[url('/images/login-sm2.jpg')] sm:bg-[url('/images/login-lg2.jpg')]  opacity-100">
-      <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl  sm:bg-cyan-900 backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'>
+      {/* <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl  sm:bg-cyan-900 backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'> */}
+      <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl  sm:bg-gradient-to-b from-blue-900 to-cyan-900  backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'>
         <h1 className='text-center text-3xl font-extrabold text-white pb-6'>User Signup</h1>
         <div className=' flex flex-col p-3 gap-4'>
           <input className='p-1 rounded-md' type="text" name="name" value={data.name} placeholder='Name' onChange={changeHandler} />

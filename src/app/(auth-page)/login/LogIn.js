@@ -65,7 +65,8 @@ export default function LogIn() {
   return (
     <Fragment>
       <div className="h-screen w-screen flex justify-center items-center bg-cover bg-center bg-[url('/images/login-sm2.jpg')] sm:bg-[url('/images/login-lg2.jpg')] opacity-100">
-        <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl sm:bg-cyan-900  backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'>
+        {/* <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl sm:bg-cyan-900  backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'> */}
+        <div className='min-h-96 min-w-72 sm:min-h-[430px] sm:w-[400px] p-6 backdrop-blur-2xl  sm:bg-gradient-to-b from-blue-900 to-cyan-900  backdrop-brightness-90 border-2  border-white rounded-lg shadow-sm shadow-slate-200'>
           <h1 className='text-center text-3xl font-extrabold text-white pb-8'>User Login</h1>
           <div className=' flex flex-col p-4 gap-6'>
             <input className='p-1 rounded-md' type="email" name="email" value={data.email} placeholder='Email' onChange={changeHandler} />
