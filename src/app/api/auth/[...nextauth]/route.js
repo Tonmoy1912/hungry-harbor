@@ -6,7 +6,7 @@ import GoogleProvider from "next-auth/providers/google"
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { z } from "zod"
-import Users from "@/models/userSchema";
+import Users from "@/models/user/userSchema";
 
 function generateRandomString(length) {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -53,7 +53,7 @@ export const authOptions = {
                 }
                 return {
                     email: prevUser.email,
-                    name: prevUser.name
+                    // name: prevUser.name
                 };//this will be found in session as user
             }
         }),

@@ -111,9 +111,7 @@ export default function SignUp() {
     </div>
 
     {/* Notification................ */}
-    {notiData.show && 
-      <Notification message={notiData.message} type={notiData.type}  onClick={closeNoti}/>
-    }
+      <Notification message={notiData.message} type={notiData.type}  onClick={closeNoti} show={notiData.show}/>
     </Fragment>
   );
 }

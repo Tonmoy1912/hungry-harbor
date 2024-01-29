@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import {z} from "zod"
-import Users from "@/models/userSchema";
+import Users from "@/models/user/userSchema";
 
 export async function POST(request){
     try{
