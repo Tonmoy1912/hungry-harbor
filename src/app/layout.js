@@ -4,6 +4,7 @@ import SessionProvider from "@/components/session/SessionProvider"
 import { getServerSession } from "next-auth";
 import RecoilRoot from "@/components/recoilState/RecoilState";
 import { authOptions } from "./api/auth/[...nextauth]/route";
+import QueryProvider from "@/components/react-query-provider/QueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +20,9 @@ export default async function RootLayout({ children }) {
       <body className={`${inter.className} `}>
         <SessionProvider session={session}>
           <RecoilRoot>
-            {children}
+            <QueryProvider>
+              {children}
+            </QueryProvider>
           </RecoilRoot>
         </SessionProvider>
       </body>

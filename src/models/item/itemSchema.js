@@ -22,6 +22,14 @@ export const itemSchema = new mongoose.Schema({
     date:{
         type: Date,
         default: Date.now
+    },
+    total_review:{
+        type:Number,
+        default:0
+    },
+    rating:{
+        type: Number,
+        default: 0.0
     }
 });
 
