@@ -53,6 +53,7 @@ export const authOptions = {
                 }
                 return {
                     email: prevUser.email,
+                    id: prevUser.id
                     // name: prevUser.name
                 };//this will be found in session as user
             }
@@ -61,8 +62,10 @@ export const authOptions = {
     ],
     callbacks: {
         async jwt({ token, account, user }) {
+            // await mongoose.connect(process.env.MONGO_URL);
+            // console.log("user in jwt",user);
             if (account && account.provider == "google") {//signing in
-                await mongoose.connect(process.env.MONGO_URL);
+                // await mongoose.connect(process.env.MONGO_URL);
                 // console.log("User signed in with google");
                 // console.log("user", user);
                 const prevUser = await Users.findOne({ email: user.email }).select({ email: 1, password: 1, name: 1 });
@@ -72,10 +75,25 @@ export const authOptions = {
                     password = await bcrypt.hash(password, salt);
                     const newUser = new Users({ email: user.email, name: user.name, password });
                     await newUser.save();
+                    token.id = newUser.id;
+                    token.email = newUser.email;
                 }
+            }
+            if(account && account.provider == "credentials"){
+                token.email=user.email;
+                token.id=user.id;
             }
             // console.log("session form jwt",session);
             return token;
+        },
+        async session({ session, token, user }) {
+            // Send properties to the client, like an access_token and user id from a provider.
+            // console.log("token",token);
+            // console.log("user",user);
+            session.user.email = token.email;
+            session.user.id = token.id;
+
+            return session;
         }
     }
 }

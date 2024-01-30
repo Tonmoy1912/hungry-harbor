@@ -1,8 +1,9 @@
 "use client";
 //completely done
-import React, { Fragment } from 'react';
-import { useRecoilState } from 'recoil';
+import React, { Fragment, useEffect } from 'react';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import { navAtom } from '@/store/navState';
+import { sessionAtom } from '@/store/sessionStore';
 import { IoReorderThree } from "react-icons/io5";
 import { RxCross1 } from "react-icons/rx";
 import { useSession } from 'next-auth/react';
@@ -10,16 +11,28 @@ import { signOut } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function TopBar() {
-    const { status } = useSession();
-    const [navState,setNavState]=useRecoilState(navAtom);
+    const { data, status } = useSession();
+    const [navState, setNavState] = useRecoilState(navAtom);
+    const setSessionState = useSetRecoilState(sessionAtom);
+
+    useEffect(() => {
+        if (status == "authenticated") {
+            // console.log()
+            // console.log("client session",data);
+            setSessionState((session) => { return data.user });
+        }
+        else if (status == "unauthenticated") {
+            setSessionState((session) => { return null });
+        }
+    }, [status]);
     return (
         <div className='z-50 fixed top-0 left-0 h-14 p-1 w-screen bg-blue-900 flex justify-between items-center'>
             <div className='flex gap-4 px-3'>
                 {
-                    navState.open?(
-                        <h1 className='flex items-center sm:hidden'><RxCross1 className='text-white scale-125 ' onClick={()=>{setNavState({...navState,open:false})}}/></h1>
-                    ):(
-                        <h1 className='flex items-center sm:hidden'><IoReorderThree className='text-white scale-150 ' onClick={()=>{setNavState({...navState,open:true})}}/></h1>
+                    navState.open ? (
+                        <h1 className='flex items-center sm:hidden'><RxCross1 className='text-white scale-125 ' onClick={() => { setNavState({ ...navState, open: false }) }} /></h1>
+                    ) : (
+                        <h1 className='flex items-center sm:hidden'><IoReorderThree className='text-white scale-150 ' onClick={() => { setNavState({ ...navState, open: true }) }} /></h1>
                     )
                 }
                 <h1 className='text-white font-bold sm:text-2xl'> Hungry Harbor </h1>
