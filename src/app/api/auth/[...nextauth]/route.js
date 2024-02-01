@@ -30,7 +30,9 @@ export const authOptions = {
         }),
         CredentialsProvider({
             async authorize(credentials, req) {
-                const { email, password } = credentials;
+                let { email, password } = credentials;
+                email=email.trim();
+                password.trim();
                 const Body = z.object({
                     email: z.string().email(),
                     password: z.string().min(1)

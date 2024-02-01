@@ -55,7 +55,7 @@ export default function SignUp() {
     }
     
     //backend call for signup
-    fetch("/api/signup", {
+    fetch("/api/auth/signup", {
       cache: "no-store",
       method: "POST",
       headers: {

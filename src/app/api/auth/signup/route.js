@@ -11,6 +11,9 @@ export async function POST(request){
         await mongoose.connect(process.env.MONGO_URL);
         const body=await request.json();
         // console.log("body",body);
+        for( let i in body){
+            body[i]=body[i].trim();
+        }
         const Body=z.object({
             email: z.string().email(),
             password: z.string().min(1),
