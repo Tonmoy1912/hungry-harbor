@@ -45,7 +45,7 @@ export default function page() {
   return (
     <div className='w-full flex flex-col gap-6 justify-start items-center p-6 bg-slate-300 '>
 
-      <div className='w-11/12 flex flex-col gap-4 justify-center items-center self-center py-6 bg-blue-500 rounded-lg shadow-lg shadow-blue-600'>
+      <div className='p-5 w-11/12 flex flex-col gap-4 justify-center items-center self-center py-6 bg-blue-500 rounded-lg shadow-lg shadow-blue-600'>
         <Image src={data.avatar} height={200} width={200} alt='user profile' className='rounded-full h-40 w-40'></Image>
         <Link href={"/profile/change-password"} className='px-1 border border-black text-sm bg-slate-300 text-black'>Change Password</Link>
       </div>
@@ -147,7 +147,7 @@ function InputField({ data, type, fieldName, name, handleChange, setNoti,queryDa
     <Fragment>
       <div className='pb-4 '>
         <h1 className='py-2 text-xl text-black font-semibold'>{fieldName}</h1>
-        <textarea rows={4} cols={30} className={`p-0.5 rounded-sm ${disabled ? "bg-slate-300 " : "bg-slate-100"}`} value={data[name]} name={name} onChange={handleChange} disabled={disabled} />
+        <textarea rows={4} cols={30} className={`p-0.5 rounded-sm ${disabled ? "bg-slate-300 " : "bg-slate-100"} max-w-[85%]`} value={data[name]} name={name} onChange={handleChange} disabled={disabled} />
         <br />
         {disabled && !processing && <button className='m-2 py-1 px-2 text-white text-sm font-semibold rounded-md bg-blue-800' onClick={handleDisable}>Edit</button>}
         {showSave && <button className='m-2 py-1 px-2 text-white text-sm font-semibold rounded-md bg-green-800' onClick={() => { mutation.mutate() }}>Save</button>}

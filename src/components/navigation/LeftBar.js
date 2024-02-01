@@ -19,7 +19,7 @@ export default function LeftBar() {
     return (
         <Fragment>
             {/* form desktop */}
-            <div className='hidden fixed top-0 left-0  sm:w-56 md:w-72 h-screen pt-14 bg-blue-800 sm:flex flex-col justify-center border-r border-r-blue-950'>
+            <div className='hidden fixed top-0 left-0  sm:w-56 md:w-72 h-screen pt-14 bg-blue-950 sm:flex flex-col justify-center border-r border-r-blue-950'>
                 <div className='flex flex-col justify-start gap-6 items-center text-white text-lg text-center' >
 
                     <Link href={"/"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "" }) }}>Home</Link>
@@ -52,7 +52,7 @@ export default function LeftBar() {
                             duration: 0.3,
                             ease: "easeOut"
                         }}
-                        className='sm:hidden fixed top-0 left-0 pt-14 w-56 h-screen bg-blue-800 flex  flex-col justify-start border-r border-r-blue-950'>
+                        className='sm:hidden fixed top-0 left-0 pt-14 w-56 h-screen bg-blue-950 flex  flex-col justify-start border-r border-r-blue-950'>
 
                         <div className='flex flex-col justify-start gap-6 items-center text-white text-lg pt-8 text-center' >
 

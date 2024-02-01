@@ -26,7 +26,7 @@ export default function TopBar() {
         }
     }, [status]);
     return (
-        <div className='z-50 fixed top-0 left-0 h-14 p-1 w-screen bg-blue-900 flex justify-between items-center border-b border-b-blue-950'>
+        <div className='z-50 fixed top-0 left-0 h-14 p-1 w-screen bg-blue-950 flex justify-between items-center border-b border-b-blue-800'>
             <div className='flex gap-4 px-3'>
                 {
                     navState.open ? (
