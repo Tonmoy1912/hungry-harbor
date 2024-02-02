@@ -1,2 +1,2 @@
-str="    ";
-console.log(str.trim().length);
+num=Math.random();
+console.log(num);
