@@ -1,11 +1,13 @@
 "use client";
+//completely done
 import React, { Fragment, useState } from 'react';
 import Notification from '@/components/notification.js/Notification';
+import Link from 'next/link';
 
 export default function page() {
   const [email, setEmail] = useState("");
-  const [showOTP, setShowOTP] = useState(false);
-  const [sendAgain,setSendAgain]=useState(false);
+  const [showOTP, setShowOTP] = useState(true);
+  const [sendAgain, setSendAgain] = useState(false);
   const [showInput, setShowInput] = useState(false);
   const [noti, setNoti] = useState({ message: "", type: "", show: false });
   const [processing, setProcessing] = useState(false);
@@ -16,15 +18,43 @@ export default function page() {
     setNoti({ message: "", type: "", show: false })
   }
   function sendOTPHandler() {
-    console.log("email", email);
+    if (email.trim() == "") {
+      setNoti({ type: "Failed", message: "Enter valid input", show: true });
+      return;
+    }
     setProcessing(true);
-    setTimeout(() => {
-      setNoti({ message: "OTP is sent to the given email. Please submit the OTP and change password within 5 minutes.", type: "Success", show: true });
-      setProcessing(false);
-      setSendAgain(true);
-      setShowOTP(true);
-      setShowInput(false);
-    }, 2000);
+    // setTimeout(() => {
+    //   setNoti({ message: "OTP is sent to the given email. Please submit the OTP and change password within 5 minutes.", type: "Success", show: true });
+    //   setProcessing(false);
+    //   setSendAgain(true);
+    //   setShowOTP(true);
+    //   setShowInput(false);
+    // }, 2000);
+    fetch("/api/forgot-password/get-otp", {
+      cache: "no-store",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email: email })
+    })
+      .then(data => data.json())
+      .then(data => {
+        setProcessing(false);
+        if (data.ok) {
+          setSendAgain(true);
+          setShowOTP(true);
+          setShowInput(false);
+          setNoti({ type: "Success", message: data.message, show: true });
+        }
+        else {
+          setNoti({ type: "Failed", message: data.message, show: true });
+        }
+      })
+      .catch(err => {
+        setProcessing(false);
+        setNoti({ type: "Failed", message: err.message, show: true });
+      })
   }
   return (
     <Fragment>
@@ -39,10 +69,11 @@ export default function page() {
             processing ?
               <button className='py-1 px-3 bg-black text-white font-semibold rounded-lg animate-pulse' disabled>Processing...</button>
               :
-              <button className='py-1 px-3 bg-black text-white font-semibold rounded-lg' onClick={sendOTPHandler}>Send OTP {sendAgain?"Again":""} </button>
+              <button className='py-1 px-3 bg-black text-white font-semibold rounded-lg' onClick={sendOTPHandler}>Send OTP {sendAgain ? "Again" : ""} </button>
           }
-          {showOTP && <OTPInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti}/>}
-          {showInput && <PasswordInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti}/>}
+          {showOTP && <OTPInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti} />}
+          {showInput && <PasswordInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti} />}
+          <Link href={"/login"} className='px-3 py-1 bg-black text-white rounded-lg' >Go to Login page</Link>
         </div>
       </div>
       <Notification message={noti.message} type={noti.type} show={noti.show} onClick={handleNoti} />
@@ -53,14 +84,41 @@ export default function page() {
 function OTPInput({ setShowInput, setShowOTP, setNoti }) {
   const [processing, setProcessing] = useState(false);
   const [otp, setOTP] = useState("");
-  function submitHandler(){
-    console.log("OTP",otp);
+  function submitHandler() {
+    if (otp.trim() == "") {
+      setNoti({ type: "Failed", message: "Enter valid input", show: true });
+      return;
+    }
     setProcessing(true);
-    setTimeout(()=>{
-      setProcessing(false);
-      setShowInput(true);
-      setShowOTP(false);
-    },2000);
+    // setTimeout(() => {
+    //   setProcessing(false);
+    //   setShowInput(true);
+    //   setShowOTP(false);
+    // }, 2000);
+    fetch("/api/forgot-password/verify-otp", {
+      cache: "no-store",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ otp: otp })
+    })
+      .then(data => data.json())
+      .then(data => {
+        setProcessing(false);
+        if (data.ok) {
+          setNoti({ type: "Success", message: data.message, show: true });
+          setShowInput(true);
+          setShowOTP(false);
+        }
+        else {
+          setNoti({ type: "Failed", message: data.message, show: true });
+        }
+      })
+      .catch(err => {
+        setProcessing(false);
+        setNoti({ type: "Failed", message: err.message, show: true });
+      })
   }
   return (
     <Fragment>
@@ -87,13 +145,36 @@ function PasswordInput({ setShowInput, setShowOTP, setNoti }) {
   function changeHandler(e) {
     setData({ ...data, [e.target.name]: e.target.value });
   }
-  function setPasswordHandler(){
-    console.log("data",data);
+  function setPasswordHandler() {
+    // console.log("data", data);
+    for (let i in data) {
+      if (data[i].trim() == "") {
+        setNoti({ type: "Failed", message: "Enter valid input", show: true });
+        return;
+      }
+    }
     setProcessing(true);
-    setTimeout(()=>{
-      setProcessing(false);
-      setNoti({message:"Password changed successfully",type:"Success",show:true});
-    },2000);
+    // setTimeout(() => {
+    //   setProcessing(false);
+    //   setNoti({ message: "Password changed successfully", type: "Success", show: true });
+    // }, 2000);
+    fetch("/api/forgot-password/reset-password", {
+      cache: "no-store",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+      .then(data => data.json())
+      .then(data => {
+        setProcessing(false);
+        setNoti({ message: data.message, type: data.ok ? "Success" : "Failed", show: true });
+      })
+      .catch(err => {
+        setProcessing(false);
+        setNoti({ type: "Failed", message: err.message, show: true });
+      })
   }
   return (
     <Fragment>
@@ -101,12 +182,12 @@ function PasswordInput({ setShowInput, setShowOTP, setNoti }) {
       <div>
         <span className='text-black font-semibold mr-3 '>New Password</span>
         <br />
-        <input type="password" className='p-0.5 border border-black' name='new_password' value={data.new_password} onChange={changeHandler}/>
+        <input type="password" className='p-0.5 border border-black' name='new_password' value={data.new_password} onChange={changeHandler} />
       </div>
       <div>
         <span className='text-black font-semibold mr-3 '>Confirm Password</span>
         <br />
-        <input type="text" className='p-0.5 border border-black' name='confirm_password' value={data.confirm_password} onChange={changeHandler}/>
+        <input type="text" className='p-0.5 border border-black' name='confirm_password' value={data.confirm_password} onChange={changeHandler} />
       </div>
       {
         processing ?

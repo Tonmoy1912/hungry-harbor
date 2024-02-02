@@ -81,6 +81,7 @@ export default function LogIn() {
             }
 
             {/* or seperator */}
+            <Link href={"/forgot-password"} className='text-sm text-slate-50 self-end underline -my-3'>Forgot Password</Link>
             <div className='flex justify-between items-baseline'>
               <div className='w-1/3 h-0.5 bg-white'></div>
               <span className='text-white text-md'>or</span>
