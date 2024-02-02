@@ -30,6 +30,7 @@ export default function page() {
 
   useEffect(() => {
     setDataState({...data});
+    // console.log("fetched data",data);
   }, [data]);
 
   function handleChange(e) {
@@ -46,7 +47,7 @@ export default function page() {
     <div className='w-full flex flex-col gap-6 justify-start items-center p-6 bg-slate-300 '>
 
       <div className='p-5 w-11/12 flex flex-col gap-4 justify-center items-center self-center py-6 bg-blue-500 rounded-lg shadow-lg shadow-blue-600'>
-        <Image src={data.avatar} height={200} width={200} alt='user profile' className='rounded-full h-40 w-40'></Image>
+        <Image priority={true} src={data.avatar} height={200} width={200} alt='user profile' className='rounded-full h-40 w-40'></Image>
         <Link href={"/profile/change-password"} className='px-1 border border-black text-sm bg-slate-300 text-black'>Change Password</Link>
       </div>
 

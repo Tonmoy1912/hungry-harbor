@@ -80,6 +80,10 @@ export const authOptions = {
                     token.id = newUser.id;
                     token.email = newUser.email;
                 }
+                else{
+                    token.id = prevUser.id;
+                    token.email = prevUser.email;
+                }
             }
             if(account && account.provider == "credentials"){
                 token.email=user.email;

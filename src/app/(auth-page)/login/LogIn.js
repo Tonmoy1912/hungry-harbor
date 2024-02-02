@@ -53,7 +53,8 @@ export default function LogIn() {
     const result = await signIn("credentials", { redirect: false, email: data.email, password: data.password });
     setLoading(false);
     if (result.ok) {
-      router.push("/");
+      router.refresh();
+      // router.push("/");
       // console.log("login successfull");
     }
     else {
