@@ -1,8 +1,9 @@
 "use client";
 //completely done
 import React, { Fragment } from 'react'
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { navAtom } from '@/store/navState';
+import { sessionAtom } from '@/store/sessionStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect } from 'react';
@@ -10,12 +11,13 @@ import { usePathname } from 'next/navigation';
 
 export default function LeftBar() {
     const [navState, setNavState] = useRecoilState(navAtom);
-    const pathName=usePathname();
-    useEffect(()=>{
+    const sessionState = useRecoilValue(sessionAtom);
+    const pathName = usePathname();
+    useEffect(() => {
         // console.log(pathName.split("/"));
-        const arr=pathName.split("/");
-        setNavState({...navState,curTab:arr[1]});
-    },[pathName]);
+        const arr = pathName.split("/");
+        setNavState({ ...navState, curTab: arr[1] });
+    }, [pathName]);
     return (
         <Fragment>
             {/* form desktop */}
@@ -27,10 +29,13 @@ export default function LeftBar() {
                     <Link href={"/notifications"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "notifications" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "notifications" }) }}>Notifications</Link>
                     <Link href={"/orders"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "orders" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "orders" }) }}>Orders</Link>
                     <Link href={"/cart"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "cart" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "cart" }) }}>Cart</Link>
+                    {
+                        sessionState && sessionState.isAdmin &&
+                        <Link href={"/control-panel/dashboard"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "dashboard" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "dashboard" }) }}>Control Panel</Link>
+                    }
                     <Link href={"/profile"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "profile" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "profile" }) }}>
                         Profile
                     </Link>
-
                 </div>
             </div>
 
@@ -56,15 +61,18 @@ export default function LeftBar() {
 
                         <div className='flex flex-col justify-start gap-6 items-center text-white text-lg pt-8 text-center' >
 
-                            <Link href={"/"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "",open:false }) }}>Home</Link>
-                            <Link href={"/categories"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "categories" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "categories",open:false }) }}>Categories</Link>
-                            <Link href={"/notifications"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "notifications" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "notifications",open:false }) }}>Notifications</Link>
-                            <Link href={"/orders"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "orders" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "orders",open:false }) }}>Orders</Link>
-                            <Link href={"/cart"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "cart" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "cart",open:false }) }}>Cart</Link>
-                            <Link href={"/profile"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "profile" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "profile",open:false }) }}>
+                            <Link href={"/"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "", open: false }) }}>Home</Link>
+                            <Link href={"/categories"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "categories" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "categories", open: false }) }}>Categories</Link>
+                            <Link href={"/notifications"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "notifications" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "notifications", open: false }) }}>Notifications</Link>
+                            <Link href={"/orders"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "orders" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "orders", open: false }) }}>Orders</Link>
+                            <Link href={"/cart"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "cart" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "cart", open: false }) }}>Cart</Link>
+                            {
+                                sessionState && sessionState.isAdmin &&
+                                <Link href={"/control-panel/dashboard"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "dashboard" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "dashboard", open: false  }) }}>Control Panel</Link>
+                            }
+                            <Link href={"/profile"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "profile" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "profile", open: false }) }}>
                                 Profile
                             </Link>
-
                         </div>
 
                     </motion.div>

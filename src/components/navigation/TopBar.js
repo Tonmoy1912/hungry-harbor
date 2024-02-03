@@ -19,7 +19,7 @@ export default function TopBar() {
         if (status == "authenticated") {
             // console.log()
             // console.log("client session",data);
-            setSessionState((session) => { return data.user });
+            setSessionState((session) => { return {...data.user} });
         }
         else if (status == "unauthenticated") {
             setSessionState((session) => { return null });
@@ -41,12 +41,12 @@ export default function TopBar() {
                 {
                     status != "authenticated" ? (
                         <Fragment>
-                            <Link className='px-2 py-1 bg-cyan-600 rounded-lg  text-white font-semibold' href={"/login"}>Login</Link>
-                            <Link className='px-2 py-1 bg-cyan-600 rounded-lg  text-white font-semibold' href={"/signup"}>SignUp</Link>
+                            <Link className='px-2 py-1 bg-cyan-600 rounded-lg  text-white font-semibold text-sm' href={"/login"}>Login</Link>
+                            <Link className='px-2 py-1 bg-cyan-600 rounded-lg  text-white font-semibold text-sm' href={"/signup"}>SignUp</Link>
                         </Fragment>
                     ) :
                         (
-                            <button className='px-2 py-1 bg-cyan-600 rounded-lg  text-white font-bold' onClick={() => { signOut({ callbackUrl: '/' }) }}>Logout</button>
+                            <button className='px-2 py-1 bg-cyan-600 rounded-lg  text-white font-bold text-sm' onClick={() => { signOut({ callbackUrl: '/' }) }}>Logout</button>
                         )
                 }
             </div>

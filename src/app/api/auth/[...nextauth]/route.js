@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { z } from "zod"
 import Users from "@/models/user/userSchema";
+import Owners from "@/models/owner/ownerSchema";
 
 function generateRandomString(length) {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -64,7 +65,7 @@ export const authOptions = {
     ],
     callbacks: {
         async jwt({ token, account, user }) {
-            // await mongoose.connect(process.env.MONGO_URL);
+            await mongoose.connect(process.env.MONGO_URL);
             // console.log("user in jwt",user);
             if (account && account.provider == "google") {//signing in
                 // await mongoose.connect(process.env.MONGO_URL);
@@ -90,6 +91,13 @@ export const authOptions = {
                 token.id=user.id;
             }
             // console.log("session form jwt",session);
+            const owner=await Owners.findOne({email:token.email});
+            if(owner){
+                token.isAdmin=true;
+            }
+            else{
+                token.isAdmin=false;
+            }
             return token;
         },
         async session({ session, token, user }) {
@@ -98,7 +106,7 @@ export const authOptions = {
             // console.log("user",user);
             session.user.email = token.email;
             session.user.id = token.id;
-
+            session.user.isAdmin=token.isAdmin;
             return session;
         }
     }

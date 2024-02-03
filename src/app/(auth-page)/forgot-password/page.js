@@ -11,6 +11,7 @@ export default function page() {
   const [showInput, setShowInput] = useState(false);
   const [noti, setNoti] = useState({ message: "", type: "", show: false });
   const [processing, setProcessing] = useState(false);
+  const [otpInput,setOTPInput]=useState(true);
   function changeHandler(e) {
     setEmail(e.target.value);
   }
@@ -23,13 +24,6 @@ export default function page() {
       return;
     }
     setProcessing(true);
-    // setTimeout(() => {
-    //   setNoti({ message: "OTP is sent to the given email. Please submit the OTP and change password within 5 minutes.", type: "Success", show: true });
-    //   setProcessing(false);
-    //   setSendAgain(true);
-    //   setShowOTP(true);
-    //   setShowInput(false);
-    // }, 2000);
     fetch("/api/forgot-password/get-otp", {
       cache: "no-store",
       method: "POST",
@@ -44,6 +38,7 @@ export default function page() {
         if (data.ok) {
           setSendAgain(true);
           setShowOTP(true);
+          setOTPInput(true);
           setShowInput(false);
           setNoti({ type: "Success", message: data.message, show: true });
         }
@@ -71,8 +66,12 @@ export default function page() {
               :
               <button className='py-1 px-3 bg-black text-white font-semibold rounded-lg' onClick={sendOTPHandler}>Send OTP {sendAgain ? "Again" : ""} </button>
           }
-          {showOTP && <OTPInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti} />}
-          {showInput && <PasswordInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti} />}
+          <div className='flex justify-center gap-3 '>
+            <button className={`py-1 px-3 rounded-lg  border border-black text-sm font-semibold ${otpInput?"bg-black text-white":"bg-slate-50 text-black"}`} onClick={()=>{setOTPInput(true); setShowOTP(true); setShowInput(false);}}>OTP Input</button>
+            <button className={`py-1 px-3 rounded-lg  border border-black text-sm font-semibold ${!otpInput?"bg-black text-white":"bg-slate-50 text-black"}`} onClick={()=>{setOTPInput(false); setShowOTP(false); setShowInput(true); }}>Change Password</button>
+          </div>
+          {showOTP && <OTPInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti} setOTPInput={setOTPInput}/>}
+          {showInput && <PasswordInput setShowInput={setShowInput} setShowOTP={setShowOTP} setNoti={setNoti} setOTPInput={setOTPInput}/>}
           <Link href={"/login"} className='px-3 py-1 bg-black text-white rounded-lg' >Go to Login page</Link>
         </div>
       </div>
@@ -81,7 +80,7 @@ export default function page() {
   )
 }
 
-function OTPInput({ setShowInput, setShowOTP, setNoti }) {
+function OTPInput({ setShowInput, setShowOTP, setNoti, setOTPInput }) {
   const [processing, setProcessing] = useState(false);
   const [otp, setOTP] = useState("");
   function submitHandler() {
@@ -90,11 +89,6 @@ function OTPInput({ setShowInput, setShowOTP, setNoti }) {
       return;
     }
     setProcessing(true);
-    // setTimeout(() => {
-    //   setProcessing(false);
-    //   setShowInput(true);
-    //   setShowOTP(false);
-    // }, 2000);
     fetch("/api/forgot-password/verify-otp", {
       cache: "no-store",
       method: "POST",
@@ -110,6 +104,7 @@ function OTPInput({ setShowInput, setShowOTP, setNoti }) {
           setNoti({ type: "Success", message: data.message, show: true });
           setShowInput(true);
           setShowOTP(false);
+          setOTPInput(false);
         }
         else {
           setNoti({ type: "Failed", message: data.message, show: true });
@@ -139,7 +134,7 @@ function OTPInput({ setShowInput, setShowOTP, setNoti }) {
 }
 
 
-function PasswordInput({ setShowInput, setShowOTP, setNoti }) {
+function PasswordInput({ setShowInput, setShowOTP, setNoti, setOTPInput }) {
   const [processing, setProcessing] = useState(false);
   const [data, setData] = useState({ new_password: "", confirm_password: "" });
   function changeHandler(e) {
@@ -154,10 +149,6 @@ function PasswordInput({ setShowInput, setShowOTP, setNoti }) {
       }
     }
     setProcessing(true);
-    // setTimeout(() => {
-    //   setProcessing(false);
-    //   setNoti({ message: "Password changed successfully", type: "Success", show: true });
-    // }, 2000);
     fetch("/api/forgot-password/reset-password", {
       cache: "no-store",
       method: "POST",

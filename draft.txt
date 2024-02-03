@@ -1,1 +1,2 @@
-all auth functionality done and cleaned the project
+Control panel
+add items

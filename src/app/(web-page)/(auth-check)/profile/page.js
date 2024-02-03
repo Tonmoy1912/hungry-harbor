@@ -57,7 +57,7 @@ export default function page() {
 
         <div className='pb-4  border-b border-b-slate-600'>
           <h1 className='py-2 text-xl text-black font-semibold'>Email</h1>
-          <input className='p-0.5 rounded-sm bg-slate-300' type="text" value={data.email} disabled={true} />
+          <input className='p-0.5 rounded-sm bg-slate-300 ' type="text" value={data.email} disabled={true} />
         </div>
 
         <InputField type="input" data={dataState} name={"phone"} fieldName={"Phone"} handleChange={handleChange} setNoti={setNoti} queryData={data} setDataState={setDataState}/>
