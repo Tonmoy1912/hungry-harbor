@@ -5,11 +5,11 @@ const wishListSchema = new mongoose.Schema({
         type:String,
         require: true
     },
-    itemIds:[{
+    items:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'items'
     }],
-    userId:{
+    user:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'users'
     }

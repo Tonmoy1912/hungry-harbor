@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema({
-    userId:{
+    user:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'users'
     },
-    itemId:{
+    item:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'items'
     },
