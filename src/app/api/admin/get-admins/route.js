@@ -6,10 +6,10 @@ import Owners from "@/models/owner/ownerSchema";
 
 export async function GET(request){
     try{
-        const session=await getServerSession(authOptions);
-        if(!session || !session.user.isAdmin){
-            return NextResponse.json({ok:false,message:"You are not authorized",type:"Info"},{status:400});
-        }
+        // const session=await getServerSession(authOptions);
+        // if(!session || !session.user.isAdmin){
+        //     return NextResponse.json({ok:false,message:"You are not authorized",type:"Info"},{status:400});
+        // }
         await mongoose.connect(process.env.MONGO_URL);
         const admins=await Owners.find({}).populate({
             path:"user",
