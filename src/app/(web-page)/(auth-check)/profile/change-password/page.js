@@ -1,7 +1,7 @@
 "use client";
 //completely done
 import React, { Fragment, useState } from 'react'
-import Notification from '@/components/notification.js/Notification';
+import Notification from '@/components/notification/Notification';
 import Link from 'next/link';
 
 export default function page() {

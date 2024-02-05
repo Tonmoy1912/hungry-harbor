@@ -1,1 +1,0 @@
-remove comment from the 3 admin route

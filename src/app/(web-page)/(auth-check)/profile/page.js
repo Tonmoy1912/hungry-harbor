@@ -3,7 +3,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Notification from '@/components/notification.js/Notification';
+import Notification from '@/components/notification/Notification';
 import Link from 'next/link';
 
 export default function page() {

@@ -5,7 +5,7 @@ import React, { Fragment, useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
-import Notification from '@/components/notification.js/Notification';
+import Notification from '@/components/notification/Notification';
 
 function isEmailValid(email) {
   // Regular expression for a basic email validation
