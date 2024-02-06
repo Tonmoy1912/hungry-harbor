@@ -84,7 +84,6 @@ function InputField({ data, type, fieldName, name, handleChange, setNoti,queryDa
     mutationKey: [`profile-${name}`],
     onSuccess: () => {
       // Invalidate and refetch
-      console.log("On success called");
       setTimeout(()=>{queryClient.invalidateQueries({ queryKey: [`profile-page-data`] });},1000);
       
     },

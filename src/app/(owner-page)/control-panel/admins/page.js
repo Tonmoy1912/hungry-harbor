@@ -9,31 +9,34 @@ import Notification from '@/components/notification/Notification';
 import ConfirmBox from '@/components/confirm-box/ConfirmBox';
 import { progressAtom } from '@/store/progressAtom';
 import { useSetRecoilState } from 'recoil';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function page() {
-  const [admins, setAdmins] = useState([]);
+  // const [admins, setAdmins] = useState([]);
+  const {data:admins} = useQuery({ queryKey: ["admin-list"], queryFn: fetchAdmins,placeholderData:[],staleTime:2*60*1000 });
   const [noti, setNoti] = useState({ message: "", type: "", show: false });
   function notiHandler() {
     setNoti({ message: "", type: "", show: false });
   }
-  function fetchAdmins() {
-    fetch("/api/admin/get-admins", { cache: "no-store" })
-      .then(data => data.json())
-      .then(data => {
-        if (!data.ok) {
-          setNoti({ message: data.message, type: data.type, show: true });
-          setAdmins([]);
-          return;
-        }
-        setAdmins(data.admins);
-      })
-      .catch(err => {
-        setNoti({ message: err.message, type: "Failed", show: true });
-      });
+  async function fetchAdmins() {
+    try {
+      let data = await fetch("/api/admin/get-admins", { cache: "no-store" });
+      data = await data.json();
+
+      if (!data.ok) {
+        setNoti({ message: data.message, type: data.type, show: true });
+        return [];
+      }
+      return data.admins;
+    }
+    catch (err) {
+      setNoti({ message: err.message, type: "Failed", show: true });
+      return [];
+    }
   }
-  useEffect(() => {
-    fetchAdmins();
-  }, []);
+  // useEffect(() => {
+  //   fetchAdmins();
+  // }, []);
   return (
     <Fragment>
       <div className='p-2 md:p-5 flex flex-col justify-start items-start gap-6'>
@@ -76,8 +79,9 @@ function AddButton({ setNoti, fetchAdmins }) {
 }
 
 function AdminBox({ user, fetchAdmins, setNoti }) {
+  const queryClient=useQueryClient();
   const [showConfirmBox, setShowConfirmBox] = useState(false);
-  const setProgressState=useSetRecoilState(progressAtom);
+  const setProgressState = useSetRecoilState(progressAtom);
   function onYes() {
     setProgressState(true);
     fetch("/api/admin/remove-admin", {
@@ -91,7 +95,8 @@ function AdminBox({ user, fetchAdmins, setNoti }) {
       .then(data => data.json())
       .then(data => {
         if (data.ok) {
-          fetchAdmins();
+          // fetchAdmins();
+          queryClient.invalidateQueries({ queryKey: ['admin-list'] });
         }
         else {
           setNoti({ message: data.message, type: data.type, show: true });
@@ -122,8 +127,9 @@ function AdminBox({ user, fetchAdmins, setNoti }) {
 
 
 function AdminInputBox({ setInputDisplay, setNoti, fetchAdmins }) {
+  const queryClient=useQueryClient();
   const [email, setEmail] = useState("");
-  const setProgressState=useSetRecoilState(progressAtom);
+  const setProgressState = useSetRecoilState(progressAtom);
   function changeHandler(e) {
     setEmail(e.target.value);
   }
@@ -145,7 +151,8 @@ function AdminInputBox({ setInputDisplay, setNoti, fetchAdmins }) {
       .then(data => data.json())
       .then(data => {
         if (data.ok) {
-          fetchAdmins();
+          // fetchAdmins();
+          queryClient.invalidateQueries({ queryKey: ['admin-list'] });
         }
         else {
           setNoti({ message: data.message, type: data.type, show: true });
