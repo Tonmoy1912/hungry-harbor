@@ -8,7 +8,7 @@ export default function ControlPanelNavbar({ children }) {
         <Fragment>
             <TopBar />
             <ControlPanelLeftBar/>
-            <div className='pt-14 pl-0 sm:pl-56 md:pl-72 w-full min-h-screen bg-blue-50'>
+            <div className='pt-12 pl-0 sm:pl-56 md:pl-64 w-full min-h-screen bg-blue-50'>
                 {children}
             </div>
         </Fragment>

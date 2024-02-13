@@ -5,6 +5,7 @@ import React, { Fragment, useState } from 'react'
 import { FcGoogle } from "react-icons/fc";
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Notification from '@/components/notification/Notification';
 
 function isEmailValid(email) {
@@ -20,6 +21,7 @@ export default function SignUp() {
   const [data, setData] = useState({ email: "", password: "", confirm_password: "", name: "" });
   const [isLoading, setLoading] = useState(false);
   const [notiData,setNotiData]=useState({show:false,message:"",type:""});
+  const router = useRouter();
 
   function changeHandler(e) {
     setData({
@@ -63,17 +65,28 @@ export default function SignUp() {
       },
       body: JSON.stringify(data)
     }).then(data => data.json())
-      .then(data => {
-        setLoading(false);
+      .then(async (data) => {
+        // setLoading(false);
         if (data.ok) {
           // console.log("SignUp successfull. Now login with email and password");
           setNotiData({show:true,message:"SignUp successfull. Now login with email and password",type:"Success"});
+          // const result = await signIn("credentials", { redirect: false, email: data.email, password: data.password });
+          // console.log(result);
           setData({ email: "", password: "", confirm_password: "", name: "" });
+          // if (result.ok) {
+          //   router.refresh();
+          //   // router.push("/");
+          //   // console.log("login successfull");
+          // }
+          // else{
+            // setNotiData({show:true,message:"SignUp successfull. Now login with email and password",type:"Success"});
+          // }
         }
         else {
           // console.log(data.message);
           setNotiData({show:true,message:data.message,type:"Failed"});
         }
+        setLoading(false);
       })
       .catch((err)=>{setLoading(false)});
   }

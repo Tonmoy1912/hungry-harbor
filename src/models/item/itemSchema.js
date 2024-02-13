@@ -18,10 +18,15 @@ export const itemSchema = new mongoose.Schema({
     },
     category:{
         type: String,
+        require:true
     },
     date:{
         type: Date,
         default: Date.now
+    },
+    removed:{
+        type:Boolean,
+        default:false
     },
     total_review:{
         type:Number,
@@ -33,7 +38,7 @@ export const itemSchema = new mongoose.Schema({
     }
 });
 
-const Items=mongoose.models.itmes || mongoose.model("items",itemSchema);
+const Items=mongoose.models.items || mongoose.model("items",itemSchema);
 
 export default Items;
 

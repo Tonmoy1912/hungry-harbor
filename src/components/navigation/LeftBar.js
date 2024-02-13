@@ -21,7 +21,7 @@ export default function LeftBar() {
     return (
         <Fragment>
             {/* form desktop */}
-            <div className='z-40 hidden fixed top-0 left-0  sm:w-56 md:w-72 h-screen pt-14 bg-blue-950 sm:flex flex-col justify-center border-r border-r-blue-950'>
+            <div className='z-40 hidden fixed top-0 left-0  sm:w-56 md:w-64 h-screen pt-14 bg-blue-950 sm:flex flex-col justify-center border-r border-r-blue-950'>
                 <div className='flex flex-col justify-start gap-6 items-center text-white text-lg text-center' >
 
                     <Link href={"/"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "" }) }}>Home</Link>
