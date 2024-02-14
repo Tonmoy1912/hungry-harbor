@@ -22,7 +22,7 @@ export default function ConfirmBox({ onYes, onCancel, show, text }) {
                         // delay: 0.5,
                         ease: [0, 0.71, 0.2, 1.01]
                     }}
-                    className='z-10 fixed top-0 left-0 h-screen w-screen flex justify-center items-center'
+                    className='z-50 fixed top-0 left-0 h-screen w-screen flex justify-center items-center'
                 >
                     <div className={`min-h-[30%] w-[70%] md:w-[40%] bg-blue-900 shadow-lg shadow-blue-950 text-2xl flex flex-col justify-around font-extrabold  items-center gap-3 sm:gap-5 rounded-3xl pb-6 overflow-clip`}>
                         <p className={`font-extrabold text-md text-center text-white break-words p-3`}>{text}</p>

@@ -12,7 +12,7 @@ export async function POST(request){
         }
         let body=await request.json();
         let {category}=body;
-        category=category.trim();
+        category=category.trim().toUpperCase();
         if(category==""){
             return NextResponse.json({ok:false,message:"Enter valid category",type:"Failed"},{status:400});
         }
@@ -23,7 +23,7 @@ export async function POST(request){
         }
         let newCategory=new Categories({category});
         await newCategory.save();
-        return NextResponse.json({ok:true,message:"Category added successfully",type:"Success"},{status:200});
+        return NextResponse.json({ok:true,message:"Category added successfully",type:"Success",category:newCategory},{status:200});
     }
     catch(err){
         return NextResponse.json({ok:false,message:err.message,type:"Failed"},{status:500});

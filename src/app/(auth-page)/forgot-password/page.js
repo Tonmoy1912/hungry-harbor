@@ -1,7 +1,8 @@
 "use client";
 //completely done
 import React, { Fragment, useState } from 'react';
-import Notification from '@/components/notification/Notification';
+import { useSetRecoilState } from 'recoil';
+import { notiAtom } from '@/store/notiState';
 import Link from 'next/link';
 
 export default function page() {
@@ -9,9 +10,9 @@ export default function page() {
   const [showOTP, setShowOTP] = useState(true);
   const [sendAgain, setSendAgain] = useState(false);
   const [showInput, setShowInput] = useState(false);
-  const [noti, setNoti] = useState({ message: "", type: "", show: false });
   const [processing, setProcessing] = useState(false);
   const [otpInput,setOTPInput]=useState(true);
+  const setNoti=useSetRecoilState(notiAtom);
   function changeHandler(e) {
     setEmail(e.target.value);
   }
@@ -75,7 +76,6 @@ export default function page() {
           <Link href={"/login"} className='px-3 py-1 bg-black text-white rounded-lg' >Go to Login page</Link>
         </div>
       </div>
-      <Notification message={noti.message} type={noti.type} show={noti.show} onClick={handleNoti} />
     </Fragment>
   )
 }

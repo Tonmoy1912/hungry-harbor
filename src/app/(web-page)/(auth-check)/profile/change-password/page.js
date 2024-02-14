@@ -1,13 +1,14 @@
 "use client";
 //completely done
 import React, { Fragment, useState } from 'react'
-import Notification from '@/components/notification/Notification';
+import { useSetRecoilState } from 'recoil';
+import { notiAtom } from '@/store/notiState';
 import Link from 'next/link';
 
 export default function page() {
     const [processing, setProcessing] = useState(false);
     const [data, setData] = useState({ old_password: "", new_password: "", confirm_password: "" });
-    const [noti, setNoti] = useState({ type: "", message: "", show: false });
+    const setNoti=useSetRecoilState(notiAtom);
     function changeHandler(e) {
         setData({
             ...data, [e.target.name]: e.target.value
@@ -73,7 +74,6 @@ export default function page() {
                     }
                 <Link href={"/forgot-password"} className='py-1 px-3 bg-blue-800 self-center text-white font-semibold rounded-lg shadow-md shadow-blue-900 '>Forgot Password</Link>
             </div>
-            <Notification type={noti.type} message={noti.message} onClick={handleNoti} show={noti.show} />
         </Fragment>
     )
 }

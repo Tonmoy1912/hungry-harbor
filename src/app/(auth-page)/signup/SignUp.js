@@ -6,7 +6,8 @@ import { FcGoogle } from "react-icons/fc";
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Notification from '@/components/notification/Notification';
+import { useSetRecoilState } from 'recoil';
+import { notiAtom } from '@/store/notiState';
 
 function isEmailValid(email) {
   // Regular expression for a basic email validation
@@ -20,7 +21,7 @@ export default function SignUp() {
 
   const [data, setData] = useState({ email: "", password: "", confirm_password: "", name: "" });
   const [isLoading, setLoading] = useState(false);
-  const [notiData,setNotiData]=useState({show:false,message:"",type:""});
+  const setNotiData=useSetRecoilState(notiAtom);
   const router = useRouter();
 
   function changeHandler(e) {
@@ -124,7 +125,6 @@ export default function SignUp() {
     </div>
 
     {/* Notification................ */}
-      <Notification message={notiData.message} type={notiData.type}  onClick={closeNoti} show={notiData.show}/>
     </Fragment>
   );
 }

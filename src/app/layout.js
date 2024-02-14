@@ -2,9 +2,10 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/session/SessionProvider"
 import { getServerSession } from "next-auth";
-import RecoilRoot from "@/components/recoilState/RecoilState";
+import RecoilState from "@/components/recoilState/RecoilState";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import QueryProvider from "@/components/react-query-provider/QueryProvider";
+import Notification from '@/components/notification/Notification';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,11 +21,12 @@ export default async function RootLayout({ children }) {
     <html lang="en">
       <body className={`${inter.className} `}>
         <SessionProvider session={session}>
-          <RecoilRoot>
+          <RecoilState>
             <QueryProvider>
               {children}
+              <Notification/>
             </QueryProvider>
-          </RecoilRoot>
+          </RecoilState>
         </SessionProvider>
       </body>
     </html>

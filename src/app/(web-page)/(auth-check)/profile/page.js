@@ -3,7 +3,8 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Notification from '@/components/notification/Notification';
+import { useSetRecoilState } from 'recoil';
+import { notiAtom } from '@/store/notiState';
 import Link from 'next/link';
 
 export default function page() {
@@ -26,7 +27,7 @@ export default function page() {
   });
 
   const [dataState, setDataState] = useState({...data});
-  const [noti, setNoti] = useState({ type: "", message: "", show: false });
+  const setNoti = useSetRecoilState(notiAtom);
 
   useEffect(() => {
     setDataState({...data});
@@ -67,7 +68,6 @@ export default function page() {
       </div>
 
 
-      <Notification type={noti.type} message={noti.message} onClick={handleNoti} show={noti.show} />
     </div>
   )
 }

@@ -5,16 +5,17 @@ import { IoMdAdd } from "react-icons/io";
 import { MdOutlineMailOutline } from "react-icons/md";
 import { FaPhoneAlt } from "react-icons/fa";
 import { RiDeleteBinLine } from "react-icons/ri";
-import Notification from '@/components/notification/Notification';
 import ConfirmBox from '@/components/confirm-box/ConfirmBox';
 import { progressAtom } from '@/store/progressAtom';
 import { useSetRecoilState } from 'recoil';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { notiAtom } from '@/store/notiState';
+
 
 export default function page() {
   // const [admins, setAdmins] = useState([]);
   const {data:admins} = useQuery({ queryKey: ["admin-list"], queryFn: fetchAdmins,placeholderData:[],staleTime:2*60*1000 });
-  const [noti, setNoti] = useState({ message: "", type: "", show: false });
+  const setNoti=useSetRecoilState(notiAtom);
   function notiHandler() {
     setNoti({ message: "", type: "", show: false });
   }
@@ -52,7 +53,6 @@ export default function page() {
           )
         }
       </div>
-      {<Notification message={noti.message} type={noti.type} show={noti.show} onClick={notiHandler} />}
     </Fragment>
   )
 };
@@ -72,7 +72,7 @@ function AddButton({ setNoti, fetchAdmins }) {
   }
   return (
     <Fragment>
-      <button className='px-3 py-2 bg-blue-900  rounded-lg  flex justify-center gap-3 items-center text-white font-bold hover:bg-blue-700 hover:text-white ' onClick={clickHandler}><IoMdAdd className='scale-150 ' /> Add admin</button>
+      <button className='px-3 py-1.5 bg-blue-900  rounded-lg  flex justify-center gap-3 items-center text-white font-bold hover:bg-blue-800 hover:text-white ' onClick={clickHandler}><IoMdAdd className='scale-150 ' /> Add admin</button>
       {inputDisplay && <AdminInputBox setInputDisplay={setInputDisplay} setNoti={setNoti} fetchAdmins={fetchAdmins} />}
     </Fragment>
   );

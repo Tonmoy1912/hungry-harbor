@@ -7,10 +7,10 @@ import Items from "@/models/item/itemSchema";
 
 export async function POST(request){
     try{
-        // const session=await getServerSession(authOptions);
-        // if(!session || !session.user.isAdmin){
-        //     return NextResponse.json({ok:false,message:"Unauthorized..!",type:"Failed"},{status:400});
-        // }
+        const session=await getServerSession(authOptions);
+        if(!session || !session.user.isAdmin){
+            return NextResponse.json({ok:false,message:"Unauthorized..!",type:"Failed"},{status:400});
+        }
         let body=await request.json();
         let {name}=body;
         name=name.trim();

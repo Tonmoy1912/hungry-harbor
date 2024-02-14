@@ -12,7 +12,7 @@ export async function POST(request){
         }
         let body=await request.json();
         let {category}=body;
-        category=category.trim();
+        category=category.trim().toUpperCase();
         if(category==""){
             return NextResponse.json({ok:false,message:"Enter valid category",type:"Failed"},{status:400});
         }
@@ -25,7 +25,7 @@ export async function POST(request){
             return NextResponse.json({ok:false,message:`The category can't be removed since ${data.total} items there under this category`,type:"Failed"},{status:400});
         }
         const deletionInfo=await Categories.deleteOne({category});
-        return NextResponse.json({ok:true,message:"Category removed successfully",type:"Success"},{status:200});
+        return NextResponse.json({ok:true,message:"Category removed successfully",category,type:"Success"},{status:200});
     }
     catch(err){
         return NextResponse.json({ok:false,message:err.message,type:"Failed"},{status:500});

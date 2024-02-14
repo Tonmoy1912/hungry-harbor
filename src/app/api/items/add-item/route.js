@@ -8,17 +8,17 @@ import {z} from "zod";
 
 export async function POST(request){
     try{
-        // const session=await getServerSession(authOptions);
-        // if(!session || !session.user.isAdmin){
-        //     return NextResponse.json({ok:false,message:"Unauthorized..!",type:"Failed"},{status:400});
-        // }
+        const session=await getServerSession(authOptions);
+        if(!session || !session.user.isAdmin){
+            return NextResponse.json({ok:false,message:"Unauthorized..!",type:"Failed"},{status:400});
+        }
         let body=await request.json();
         const BodySchema=z.object({
             name:z.string().trim().min(1),
             image:z.string().url(),
             description:z.string().trim().min(1),
             price:z.coerce.number().int().nonnegative(),
-            category:z.string().trim().min(1)
+            category:z.string().trim().toUpperCase()
         });
         const parsedBody=BodySchema.safeParse(body);
         // return NextResponse.json(parsedBody);

@@ -2,9 +2,16 @@
 
 import React from 'react';
 import { motion,AnimatePresence } from 'framer-motion';
+import { useRecoilState } from 'recoil';
+import { notiAtom } from '@/store/notiState';
 
 //it takes message to display and onClick event which is fitted on OK button
-export default function Notification({ message, type, onClick, show }) {
+export default function Notification() {
+    const [notiState,setNotiState]=useRecoilState(notiAtom);
+    const {message,type,show}=notiState;
+    function onClick(){
+        setNotiState({ message:"", type:"",  show:false });
+    }
     let color = { heading: "", body: "", button: "" };
     if (type == "Success") {
         color = { heading: "bg-green-600", body: "bg-neutral-300", button: "bg-green-600" };
