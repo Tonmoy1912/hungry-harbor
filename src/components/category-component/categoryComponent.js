@@ -8,13 +8,7 @@ import { categoryAtom } from '@/store/categoryAtom';
 import { notiAtom } from '@/store/notiState';
 import { progressAtom } from '@/store/progressAtom';
 
-export function AddItemButton() {
-    return (
-        <Fragment>
-            <button className='px-3 py-1 bg-blue-900  rounded-lg  flex justify-center gap-1 items-center text-white font-bold hover:bg-blue-800  ' ><IoMdAdd className='scale-110 ' /> Item</button>
-        </Fragment>
-    );
-}
+
 
 export function AddCategory() {
     const [show, setShow] = useState(false);
@@ -215,7 +209,7 @@ export function RemoveCategoryInput({ show, setShow }) {
                         }}
                         className='w-5/6 sm:w-3/5 md:w-2/5 flex flex-col justify-start items-center p-2 gap-2 bg-blue-900 rounded-xl shadow-lg shadow-blue-950'>
                         <h1 className='text-white text-xl font-bold p-2'>Select Category</h1>
-                        <select ref={ref} className='rounded-md text-center bg-slate-300'>
+                        <select ref={ref} className='rounded-md text-center bg-slate-300 w-48'>
                             {
                                 categoriesState.state == "loading" ?
                                     (<option>"loading..."</option>) :

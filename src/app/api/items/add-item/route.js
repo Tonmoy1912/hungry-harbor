@@ -16,14 +16,14 @@ export async function POST(request){
         const BodySchema=z.object({
             name:z.string().trim().min(1),
             image:z.string().url(),
-            description:z.string().trim().min(1),
+            description:z.string().trim(),
             price:z.coerce.number().int().nonnegative(),
-            category:z.string().trim().toUpperCase()
+            category:z.string().trim().min(1).toUpperCase()
         });
         const parsedBody=BodySchema.safeParse(body);
         // return NextResponse.json(parsedBody);
         if(!parsedBody.success){
-            return NextResponse.json({ok:false,message:"Enter valid category",type:"Failed"},{status:400});
+            return NextResponse.json({ok:false,message:"Enter valid input",type:"Failed"},{status:400});
         }
         let {name,image,description,price,category}=parsedBody.data;
         await mongoose.connect(process.env.MONGO_URL);

@@ -8,7 +8,7 @@ import { IoReorderThree } from "react-icons/io5";
 import { RxCross1 } from "react-icons/rx";
 import { useSession } from 'next-auth/react';
 import { signOut } from 'next-auth/react';
-import ProgressBar from '../progress-bar/ProgressBar';
+// import ProgressBar from '../progress-bar/ProgressBar';
 import Link from 'next/link';
 
 export default function TopBar() {
@@ -54,7 +54,7 @@ export default function TopBar() {
                 </div>
             </div>
             
-            <ProgressBar/>
+            {/* <ProgressBar/> */}
         </Fragment>
     )
 }

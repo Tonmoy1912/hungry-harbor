@@ -6,6 +6,7 @@ import RecoilState from "@/components/recoilState/RecoilState";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import QueryProvider from "@/components/react-query-provider/QueryProvider";
 import Notification from '@/components/notification/Notification';
+import ProgressBar from "@/components/progress-bar/ProgressBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +26,7 @@ export default async function RootLayout({ children }) {
             <QueryProvider>
               {children}
               <Notification/>
+              <ProgressBar/>
             </QueryProvider>
           </RecoilState>
         </SessionProvider>

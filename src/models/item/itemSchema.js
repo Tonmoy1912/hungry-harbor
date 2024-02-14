@@ -7,6 +7,7 @@ export const itemSchema = new mongoose.Schema({
     },
     image:{
         type: String,
+        default:"https://firebasestorage.googleapis.com/v0/b/hungryharbor-412214.appspot.com/o/items%2Fimage-not-found.png?alt=media&token=4eedd79c-8d24-4a5f-a505-1dd3f28fbc4d",
         require:true
     },
     description:{
