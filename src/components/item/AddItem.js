@@ -9,7 +9,7 @@ import { categoryAtom } from '@/store/categoryAtom';
 import { notiAtom } from '@/store/notiState';
 import { progressAtom } from '@/store/progressAtom';
 import { getFirebaseStorage } from '@/config/firebase';
-import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
+import { ref, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage";
 import { v4 } from 'uuid';
 import { z } from "zod";
 
@@ -85,10 +85,10 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
                 setProgressState(false);
                 return ;
             }
-
+            let imageRef=null,storage=null;
             if (file) {
-                const storage = await getFirebaseStorage();
-                const imageRef = ref(storage, `items/${file.name + v4()}`);
+                storage = await getFirebaseStorage();
+                imageRef = ref(storage, `items/${file.name + v4()}`);
                 const snapshot = await uploadBytes(imageRef, file);
                 const url = await getDownloadURL(snapshot.ref);
                 newImgaeUrl=url;
@@ -117,17 +117,25 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
                     });
                     return newList;
                 })
-                setProgressState(false);
+                // setProgressState(false);
                 setNoti({message:res.message,type:res.type,show:true});
                 setShow(false);
             }
             else{
-                setProgressState(false);
+                //item not added
+                //hence delete the uploaded image
+                if(file){
+                    deleteObject(imageRef);
+                    // .then(()=>console.log("File deleted successfully"))
+                    // .catch((err)=>console.log(err.message));
+                    // setProgressState(false);
+                }
                 setNoti({message:res.message,type:res.type,show:true});
             }
+            setProgressState(false);
         }
         catch (err) {
-            setNoti({ message: "", type: "", show: false });
+            setNoti({ message: err.message, type: "Failed", show: true });
             setProgressState(false);
             // console.log(err.message);
         }
