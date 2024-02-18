@@ -13,7 +13,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { useQuery } from '@tanstack/react-query';
 import { notiAtom } from '@/store/notiState';
 import { filteredItemsSelector, allItemsAtom, searchAtom } from '@/store/itemsStore';
-import { UpdateItemInput } from './UpdateItem';
+import { UpdateItemInput, AddStockInput } from './UpdateItem';
 import Image from 'next/image';
 
 export default function AdminItemWindow() {
@@ -125,6 +125,7 @@ function TopBar() {
 }
 
 function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
+    const [showAddStock, setShowAddStock] = useState(false);
     function editClickHandler() {
         setUpdateData({ ...item });
         setUpdateShow(true);
@@ -137,13 +138,13 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
                 </div>
                 <div className='w-full md:w-2/3 md:h-full p-1.5 flex flex-col justify-start gap-1.5 items-start pl-4'>
                     <h1 className='text-xl text-black font-bold'>{item.name}</h1>
-                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-sm font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.total_review!=0? item.rating:"Unrated"}</span> <IoStarSharp />  </button>
+                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-sm font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.total_review != 0 ? item.rating : "Unrated"}</span> <IoStarSharp />  </button>
                     <button className='px-1.5 py-0.5 rounded-lg bg-cyan-600 text-white text-sm font-semibold' disabled={true}>{item.category}</button>
                     <button className='px-1.5 py-0.5 rounded-lg  text-black text-sm font-semibold flex gap-1 items-center ' disabled={true}> <MdOutlineRateReview className='scale-125' />  <span>{item.total_review}</span></button>
                     <button className='px-1.5  rounded-lg  text-black text-sm font-bold flex gap-1 items-center ' disabled={true}> <FaRupeeSign className='scale-125' />  <span className='text-lg'>{item.price}</span></button>
-                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-sm font-semibold flex gap-1 items-center ' disabled={true}> In Stock:  <span>{item.in_stock}</span> </button>
+                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-sm font-semibold flex flex-col items-start md:flex-row gap-1 md:items-center ' > <span> In Stock: {item.in_stock}</span> < AddStockButton show={showAddStock} setShow={setShowAddStock} id={item._id} /></button>
                     <div className='flex gap-3'>
-                        <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-sm font-semibold' disabled={true}>Global order: {item.global_order}</button>
+                        <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-sm font-semibold' disabled={true}>Global order: {item.global_order} </button>
                         <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-sm font-semibold' disabled={true}>Categorical order: {item.category_order}</button>
                     </div>
                 </div>
@@ -152,6 +153,18 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
                     <button className='px-2 py-1 rounded-lg bg-blue-800 hover:bg-blue-700 text-white text-sm font-semibold flex gap-1 items-center' onClick={editClickHandler} > Edit <FaRegEdit className='scale-110' /></button>
                 </div>
             </div>
+        </Fragment>
+    )
+}
+
+function AddStockButton({ show, id, setShow }) {
+    return (
+        <Fragment>
+                <button className='px-1.5 py-0.5 rounded-md bg-green-600 hover:bg-green-500 text-white text-sm font-semibold flex gap-1 items-center ' onClick={()=>{setShow(true),console.log("clicked")}}> Add stock</button>
+            {
+                show && 
+                <AddStockInput id={id} setShow={setShow} />
+            }
         </Fragment>
     )
 }
