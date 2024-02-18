@@ -1,8 +1,9 @@
 "use client";
 import React, { Fragment, useState } from 'react';
 import Image from 'next/image';
-import {  AddCategory, RemoveCategory, SelectCategory, AddCategoryInput, RemoveCategoryInput } from '@/components/category-component/categoryComponent';
+import {  AddCategory, RemoveCategory } from '@/components/category-component/categoryComponent';
 import { AddItemButton } from '@/components/item/AddItem';
+import AdminItemWindow from '@/components/item/AdminItemWindow';
 
 export default function page() {
 
@@ -12,8 +13,8 @@ export default function page() {
         <AddItemButton />
         <AddCategory />
         <RemoveCategory />
-        <RemoveCategoryInput show={false} />
       </div>
+    <AdminItemWindow />
     </Fragment>
   )
 

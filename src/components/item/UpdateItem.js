@@ -1,4 +1,5 @@
 "use client";
+//we complete tonight
 
 import React, { Fragment, useEffect, useState } from 'react';
 import { IoMdAdd } from "react-icons/io";
@@ -14,19 +15,19 @@ import { v4 } from 'uuid';
 import { z } from "zod";
 import { useQueryClient } from '@tanstack/react-query';
 
-export function AddItemButton() {
+export function UpdateItemButton() {
     const [show, setShow] = useState(false);
     const defaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/hungryharbor-412214.appspot.com/o/items%2Fimage-not-found.png?alt=media&token=4eedd79c-8d24-4a5f-a505-1dd3f28fbc4d";
 
     return (
         <Fragment>
             <button className='px-3 py-1 bg-blue-900  rounded-lg  flex justify-center gap-1 items-center text-white font-bold hover:bg-blue-800  ' onClick={() => setShow(true)}><IoMdAdd className='scale-110 ' /> Item</button>
-            <AddItemInput show={show} setShow={setShow} defaultName={""} defaultUrl={defaultImageUrl} defaultCategory={""} defaultDescription={""} defaultPrice={""} defaultInStock={""} defaultGlobalOrder={""} defaultCategoryOrder={""} />
+            <UpdateItemInput show={show} setShow={setShow} defaultName={""} defaultUrl={defaultImageUrl} defaultCategory={""} defaultDescription={""} defaultPrice={""} defaultInStock={""} defaultGlobalOrder={""} defaultCategoryOrder={""} />
         </Fragment>
     );
 }
 
-export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCategory, defaultDescription, defaultPrice, defaultInStock, defaultGlobalOrder, defaultCategoryOrder }) {
+export function UpdateItemInput({ show, setShow, defaultName, defaultUrl, defaultCategory, defaultDescription, defaultPrice, defaultInStock, defaultGlobalOrder, defaultCategoryOrder }) {
     const [file, setFile] = useState(null);
     const [name, setName] = useState(defaultName);
     const [image, setImage] = useState(defaultUrl);

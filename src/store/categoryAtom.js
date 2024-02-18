@@ -20,3 +20,8 @@ export const categoryAtom=atom({
         }
     })
 }) 
+
+export const selectedCategoryAtom=atom({
+    key:"selectedCategoryAtom",
+    default:"ALL"
+});

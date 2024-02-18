@@ -29,6 +29,18 @@ export const itemSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
+    category_order:{
+        type:Number,
+        default:1000
+    },
+    global_order:{
+        type:Number,
+        default:1000
+    },
+    in_stock:{
+        type:Number,
+        default:0
+    },
     total_review:{
         type:Number,
         default:0

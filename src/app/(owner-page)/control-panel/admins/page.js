@@ -114,7 +114,7 @@ function AdminBox({ user, fetchAdmins, setNoti }) {
   }
   return (
     <Fragment>
-      <div className='w-full p-3 rounded-xl bg-blue-300 shadow-lg shadow-blue-400 flex flex-col gap-3 md:flex-row md:justify-between md:items-center'>
+      <div className='w-full p-3 rounded-xl bg-blue-300 shadow-lg shadow-blue-400 flex flex-col gap-3  '>
         <p className='font-semibold text-black '>{user.name}</p>
         <p className='text-black  flex justify-start gap-2 items-center '> < MdOutlineMailOutline /> <span>{user.email}</span> </p>
         <p className='text-black  flex justify-start gap-2 items-center '> < FaPhoneAlt /> <span>{user.phone == "" ? "None" : user.phone}</span> </p>
