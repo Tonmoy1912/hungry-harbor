@@ -13,12 +13,15 @@ import { FaRegEdit } from "react-icons/fa";
 import { useQuery } from '@tanstack/react-query';
 import { notiAtom } from '@/store/notiState';
 import { filteredItemsSelector, allItemsAtom, searchAtom } from '@/store/itemsStore';
+import { UpdateItemInput } from './UpdateItem';
 import Image from 'next/image';
 
 export default function AdminItemWindow() {
     const setNoti = useSetRecoilState(notiAtom);
     const setAllItems = useSetRecoilState(allItemsAtom);
     const filteredItems = useRecoilValue(filteredItemsSelector);
+    const [updateData, setUpdateData] = useState({ id: "", name: "", image: "", category: "", description: "", price: "", global_order: "", category_order: "", in_stock: "" });
+    const [updateShow, setUpdateShow] = useState(false);
     const { data: items, isLoading } = useQuery({
         queryKey: ["all-items"],
         queryFn: async function () {
@@ -47,38 +50,32 @@ export default function AdminItemWindow() {
         if (!isLoading) {
             setAllItems(items);
         }
-    }, [isLoading, items])
+    }, [isLoading, items]);
+
 
     return (
-        <div className='mx-4 my-6 border border-blue-900 shadow-lg shadow-blue-950 bg-blue-900 rounded-md overflow-clip'>
-            <TopBar />
-            {
-                isLoading ? (
-                    <h1 className='bg-slate-200 '>
-                        <span className='text-blue-950 text-2xl font-bold animate-pulse py-1 px-2'>Loading...</span>
-                    </h1>
-                ) : (
-                    filteredItems.length == 0 ? (
+        <Fragment>
+            <div className='mx-4 my-6 border border-blue-900 shadow-lg shadow-blue-950 bg-blue-900 rounded-md overflow-clip'>
+                <TopBar />
+                {
+                    isLoading ? (
                         <h1 className='bg-slate-200 '>
-                            <span className='text-blue-950 text-2xl font-bold py-1 px-2'>No Item found</span>
+                            <span className='text-blue-950 text-2xl font-bold animate-pulse py-1 px-2'>Loading...</span>
                         </h1>
                     ) : (
-                        filteredItems.map(item => (<AdminItemBox item={item} key={item.name} />))
+                        filteredItems.length == 0 ? (
+                            <h1 className='bg-slate-200 '>
+                                <span className='text-blue-950 text-2xl font-bold py-1 px-2'>No Item found</span>
+                            </h1>
+                        ) : (
+                            filteredItems.map(item => (<AdminItemBox item={item} key={item.name} setUpdateData={setUpdateData} setUpdateShow={setUpdateShow} />))
+                        )
                     )
-                )
-            }
+                }
 
-            {/* <AdminItemBox item={{
-                image: "https://firebasestorage.googleapis.com/v0/b/hungryharbor-412214.appspot.com/o/items%2FScreenshot%20from%202024-02-03%2021-35-19.pngb2a026ae-edd5-404e-bd95-84455b1777c3?alt=media&token=fdb3588e-0599-416d-a725-22a1de17ae84",
-                name: "Leetcode Profile",
-                description: "rating : 2030 \nknight",
-                category: "NON-VEG",
-                price: 496,
-                removed: false,
-                total_review: 10,
-                rating: 4.5
-            }} /> */}
-        </div>
+            </div>
+            <UpdateItemInput show={updateShow} setShow={setUpdateShow} id={updateData._id} defaultName={updateData.name} defaultUrl={updateData.image} defaultCategory={updateData.category} defaultDescription={updateData.description} defaultPrice={`${updateData.price}`} defaultInStock={`${updateData.in_stock}`} defaultGlobalOrder={`${updateData.global_order}`} defaultCategoryOrder={`${updateData.category_order}`} />
+        </Fragment>
     )
 }
 
@@ -127,7 +124,11 @@ function TopBar() {
     );
 }
 
-function AdminItemBox({ item }) {
+function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
+    function editClickHandler() {
+        setUpdateData({ ...item });
+        setUpdateShow(true);
+    }
     return (
         <Fragment>
             <div className='relative pb-2 md:pb-0 md:h-64 bg-slate-200 my-0.5 flex  flex-col md:flex-row'>
@@ -136,7 +137,7 @@ function AdminItemBox({ item }) {
                 </div>
                 <div className='w-full md:w-2/3 md:h-full p-1.5 flex flex-col justify-start gap-1.5 items-start pl-4'>
                     <h1 className='text-xl text-black font-bold'>{item.name}</h1>
-                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-sm font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.rating}</span> <IoStarSharp />  </button>
+                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-sm font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.total_review!=0? item.rating:"Unrated"}</span> <IoStarSharp />  </button>
                     <button className='px-1.5 py-0.5 rounded-lg bg-cyan-600 text-white text-sm font-semibold' disabled={true}>{item.category}</button>
                     <button className='px-1.5 py-0.5 rounded-lg  text-black text-sm font-semibold flex gap-1 items-center ' disabled={true}> <MdOutlineRateReview className='scale-125' />  <span>{item.total_review}</span></button>
                     <button className='px-1.5  rounded-lg  text-black text-sm font-bold flex gap-1 items-center ' disabled={true}> <FaRupeeSign className='scale-125' />  <span className='text-lg'>{item.price}</span></button>
@@ -147,8 +148,8 @@ function AdminItemBox({ item }) {
                     </div>
                 </div>
                 <div className='relative mt-2  md:absolute bottom-2 right-2 flex gap-3 items-center justify-self-end md:mt-4  px-2 text-sm self-end'>
-                    <button className='px-2 py-1 rounded-lg bg-blue-800 hover:bg-blue-700 text-white text-sm font-semibold flex gap-1 items-center ' > View <MdOutlinePreview className='scale-110'/> </button>
-                    <button className='px-2 py-1 rounded-lg bg-blue-800 hover:bg-blue-700 text-white text-sm font-semibold flex gap-1 items-center' > Edit <FaRegEdit className='scale-110' /></button>
+                    <button className='px-2 py-1 rounded-lg bg-blue-800 hover:bg-blue-700 text-white text-sm font-semibold flex gap-1 items-center ' > View <MdOutlinePreview className='scale-110' /> </button>
+                    <button className='px-2 py-1 rounded-lg bg-blue-800 hover:bg-blue-700 text-white text-sm font-semibold flex gap-1 items-center' onClick={editClickHandler} > Edit <FaRegEdit className='scale-110' /></button>
                 </div>
             </div>
         </Fragment>

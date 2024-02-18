@@ -70,7 +70,7 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
         setInStock(defaultInStock);
         setGlobalOrder(defaultGlobalOrder);
         setCategoryOrder(defaultCategoryOrder);
-    },[]);
+    },[show]);
 
     async function AddHandler(e) {
         e.stopPropagation();
@@ -144,6 +144,7 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
                 queryClient.invalidateQueries({queryKey:["all-items"]})
                 setNoti({message:res.message,type:res.type,show:true});
                 setShow(false);
+                cancelHandler();
             }
             else{
                 //item not added
