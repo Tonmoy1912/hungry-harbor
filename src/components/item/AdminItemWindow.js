@@ -10,11 +10,14 @@ import { MdOutlineRateReview } from "react-icons/md";
 import { FaRupeeSign } from "react-icons/fa";
 import { MdOutlinePreview } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
-import { useQuery } from '@tanstack/react-query';
+import { RiDeleteBinLine } from "react-icons/ri";
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { notiAtom } from '@/store/notiState';
 import { filteredItemsSelector, allItemsAtom, searchAtom } from '@/store/itemsStore';
 import { UpdateItemInput, AddStockInput } from './UpdateItem';
 import Image from 'next/image';
+import { progressAtom } from '@/store/progressAtom';
+import ConfirmBox from '../confirm-box/ConfirmBox';
 
 export default function AdminItemWindow() {
     const setNoti = useSetRecoilState(notiAtom);
@@ -126,9 +129,78 @@ function TopBar() {
 
 function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
     const [showAddStock, setShowAddStock] = useState(false);
+    const setProgressState=useSetRecoilState(progressAtom);
+    const setNoti=useSetRecoilState(notiAtom);
+    const setCategories=useSetRecoilState(categoryAtom);
+    const [showConfirmBox,setShowConfirmBox]=useState(false);
+    const queryClient=useQueryClient();
     function editClickHandler() {
         setUpdateData({ ...item });
         setUpdateShow(true);
+    }
+    function setOutOfStockHandler(){
+        setProgressState(true);
+        fetch("/api/items/update-item/set-out-of-stock",{
+            cache:"no-store",
+            method:"POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body:JSON.stringify({id:item._id})
+        }).then(res=>res.json())
+        .then(data=>{
+            setProgressState(false);
+            if(data.ok){
+                queryClient.invalidateQueries({queryKey:["all-items"]});
+            }
+            else{
+                setNoti({message:data.message,type:data.type,show:true});
+            }
+        })
+        .catch(err=>{
+            setNoti({message:err.message,type:"Failed",show:true});
+            setProgressState(false);
+        })
+    }
+
+    function removeHandler(){
+        setProgressState(true);
+        setShowConfirmBox(false);
+        fetch("/api/items/remove-item",{
+            cache:"no-store",
+            method:"POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body:JSON.stringify({name:item.name})
+        }).then(res=>res.json())
+        .then(data=>{
+            setProgressState(false);
+            if(data.ok){
+                queryClient.invalidateQueries({queryKey:["all-items"]});
+                setCategories(categories=>{
+                    let newList=categories.map(x=>{
+                        if(x.category==item.category || x.category=="ALL"){
+                            return {...x,total:x.total-1};
+                        }
+                        else{
+                            return x;
+                        }
+                    });
+                    return newList;
+                });
+            }
+            else{
+                setNoti({message:data.message,type:data.type,show:true});
+            }
+        })
+        .catch(err=>{
+            setNoti({message:err.message,type:"Failed",show:true});
+            setProgressState(false);
+        })
+    }
+    function hideConfirmBox(){
+        setShowConfirmBox(false);
     }
     return (
         <Fragment>
@@ -138,21 +210,35 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
                 </div>
                 <div className='w-full md:w-2/3 md:h-full p-1.5 flex flex-col justify-start gap-1.5 items-start pl-4'>
                     <h1 className='text-xl text-black font-bold'>{item.name}</h1>
-                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-sm font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.total_review != 0 ? item.rating : "Unrated"}</span> <IoStarSharp />  </button>
-                    <button className='px-1.5 py-0.5 rounded-lg bg-cyan-600 text-white text-sm font-semibold' disabled={true}>{item.category}</button>
-                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-sm font-semibold flex gap-1 items-center ' disabled={true}> <MdOutlineRateReview className='scale-125' />  <span>{item.total_review}</span></button>
-                    <button className='px-1.5  rounded-lg  text-black text-sm font-bold flex gap-1 items-center ' disabled={true}> <FaRupeeSign className='scale-125' />  <span className='text-lg'>{item.price}</span></button>
-                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-sm font-semibold flex flex-col items-start md:flex-row gap-1 md:items-center ' > <span> In Stock: {item.in_stock}</span> < AddStockButton show={showAddStock} setShow={setShowAddStock} id={item._id} /></button>
+                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-xs font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.total_review != 0 ? item.rating : "Unrated"}</span> <IoStarSharp />  </button>
+                    <button className='px-1.5 py-0.5 rounded-lg bg-cyan-600 text-white text-xs font-semibold' disabled={true}>{item.category}</button>
+                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex gap-1 items-center ' disabled={true}> <MdOutlineRateReview className='scale-125' />  <span>{item.total_review}</span></button>
+                    <button className='px-1.5  rounded-lg  text-black text-xs font-bold flex gap-1 items-center ' disabled={true}> <FaRupeeSign className='scale-125' />  <span className='text-lg'>{item.price}</span></button>
+                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex flex-col items-start md:flex-row gap-1 md:items-center ' > <span> In Stock: {item.in_stock!=0?(item.in_stock):(
+                        <button className='px-1.5 py-0.5 rounded-lg bg-red-600 text-white text-xs font-semibold' disabled={true}>Out of Stock </button>
+                    )}</span> </button>
                     <div className='flex gap-3'>
-                        <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-sm font-semibold' disabled={true}>Global order: {item.global_order} </button>
-                        <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-sm font-semibold' disabled={true}>Categorical order: {item.category_order}</button>
+                        <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-xs font-semibold' disabled={true}>Global order: {item.global_order} </button>
+                        <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-xs font-semibold' disabled={true}>Categorical order: {item.category_order}</button>
+                    </div>
+                    <div className='flex gap-3 mt-2 flex-wrap'>
+                        < AddStockButton show={showAddStock} setShow={setShowAddStock} id={item._id} />
+                        {
+                            item.in_stock!=0?(
+                                <button className='px-2 py-1 rounded-md bg-red-700 hover:bg-red-600 text-white text-xs font-semibold flex gap-1 items-center' onClick={setOutOfStockHandler} > Set out of Stock </button>
+                            ):
+                            null
+                        }
                     </div>
                 </div>
-                <div className='relative mt-2  md:absolute bottom-2 right-2 flex gap-3 items-center justify-self-end md:mt-4  px-2 text-sm self-end'>
-                    <button className='px-2 py-1 rounded-lg bg-blue-800 hover:bg-blue-700 text-white text-sm font-semibold flex gap-1 items-center ' > View <MdOutlinePreview className='scale-110' /> </button>
-                    <button className='px-2 py-1 rounded-lg bg-blue-800 hover:bg-blue-700 text-white text-sm font-semibold flex gap-1 items-center' onClick={editClickHandler} > Edit <FaRegEdit className='scale-110' /></button>
+                <div className='relative mt-4  md:absolute bottom-2 right-2 flex gap-3 items-center justify-self-end md:mt-4  px-2 text-sm self-end'>
+                    <button className='px-2 py-1 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center ' > View <MdOutlinePreview className='scale-110' /> </button>
+                    <button className='px-2 py-1 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center' onClick={editClickHandler} > Edit <FaRegEdit className='scale-110' /></button>
+                    <button className='px-2 py-1 rounded-md bg-red-700 hover:bg-red-600 text-white text-xs font-semibold flex gap-1 items-center' onClick={()=>{setShowConfirmBox(true)}} > Remove <RiDeleteBinLine /></button>
+                    
                 </div>
             </div>
+            <ConfirmBox onYes={removeHandler} onCancel={hideConfirmBox} show={showConfirmBox} text={`Remove ${item.name} from item list`} />
         </Fragment>
     )
 }
@@ -160,7 +246,7 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
 function AddStockButton({ show, id, setShow }) {
     return (
         <Fragment>
-                <button className='px-1.5 py-0.5 rounded-md bg-green-600 hover:bg-green-500 text-white text-sm font-semibold flex gap-1 items-center ' onClick={()=>{setShow(true),console.log("clicked")}}> Add stock</button>
+                <button className='px-2 py-1 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center ' onClick={()=>{setShow(true),console.log("clicked")}}> Add stock</button>
             {
                 show && 
                 <AddStockInput id={id} setShow={setShow} />

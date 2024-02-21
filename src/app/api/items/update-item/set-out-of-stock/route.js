@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { authOptions } from "../../../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import mongoose, { mongo } from "mongoose";
-import Categories from "@/models/category/categorySchema";
 import Items from "@/models/item/itemSchema";
 import { z } from "zod";
 
@@ -15,15 +14,14 @@ export async function POST(request) {
         }
         let body = await request.json();
         const BodySchema = z.object({
-            id:z.string().trim().min(1),
-            add_stock: z.coerce.number().int()
+            id:z.string().trim().min(1)
         });
         const parsedBody = BodySchema.safeParse(body);
         // return NextResponse.json(parsedBody);
         if (!parsedBody.success) {
             return NextResponse.json({ ok: false, message: "Enter valid input", type: "Failed" }, { status: 400 });
         }
-        let { id, add_stock } = parsedBody.data;
+        let { id } = parsedBody.data;
         await mongoose.connect(process.env.MONGO_URL);
 
 
@@ -35,18 +33,13 @@ export async function POST(request) {
             await db_session.abortTransaction();
             return NextResponse.json({ ok: false, message: "No item found", type: "Failed" }, { status: 400 });
         }
-        let cur_stock=item.in_stock;
-        if(cur_stock+add_stock<0){
-            await db_session.abortTransaction();
-            return NextResponse.json({ ok: false, message: `Only ${cur_stock} stocks are there`, type: "Failed" }, { status: 400 });
-        }
-        item.in_stock=cur_stock+add_stock;
+        item.in_stock=0;
         await item.save();
         await db_session.commitTransaction();
         //put inside db transaction............................
 
         
-        return NextResponse.json({ ok: true, message: "Stocks added successfully", type: "Success" }, { status: 200 });
+        return NextResponse.json({ ok: true, message: "Successfully set out of stock", type: "Success" }, { status: 200 });
     }
     catch (err) {
         try{

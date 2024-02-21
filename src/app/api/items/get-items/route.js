@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Items from "@/models/item/itemSchema";
-import { BaseNextResponse } from "next/dist/server/base-http";
 
 
 export async function GET(request){

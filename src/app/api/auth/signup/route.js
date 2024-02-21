@@ -21,9 +21,11 @@ export async function POST(request){
             name: z.string().min(1)
         });
         // console.log(Body.safeParse(body));
-        const {success,data}=Body.safeParse(body);
+        const {success,data,error}=Body.safeParse(body);
+        // console.log(error);
         if(!success){
             return NextResponse.json({ok:false,message:"Enter valid input"},{status:400});
+            // return NextResponse.json({ok:false,error:error},{status:400});
         }
         const {email,password,confirm_password,name}=body;
         if(password!=confirm_password){

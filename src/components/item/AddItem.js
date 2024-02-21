@@ -20,7 +20,7 @@ export function AddItemButton() {
 
     return (
         <Fragment>
-            <button className='px-3 py-1 bg-blue-900  rounded-lg  flex justify-center gap-1 items-center text-white font-bold hover:bg-blue-800  ' onClick={() => setShow(true)}><IoMdAdd className='scale-110 ' /> Item</button>
+            <button className='px-3 py-1 bg-blue-900 shadow-md shadow-blue-950 rounded-md  flex justify-center gap-1 items-center text-white font-bold hover:bg-blue-800  ' onClick={() => setShow(true)}><IoMdAdd className='scale-110 ' /> Item</button>
             <AddItemInput show={show} setShow={setShow} defaultName={""} defaultUrl={defaultImageUrl} defaultCategory={""} defaultDescription={""} defaultPrice={""} defaultInStock={""} defaultGlobalOrder={""} defaultCategoryOrder={""} />
         </Fragment>
     );
@@ -151,7 +151,7 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
                 //hence delete the uploaded image
                 if(file){
                     deleteObject(imageRef);
-                    // .then(()=>console.log("File deleted successfully"))
+                    // .then(()=>console.log("File declearleted successfully"))
                     // .catch((err)=>console.log(err.message));
                     // setProgressState(false);
                 }

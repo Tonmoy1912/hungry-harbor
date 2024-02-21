@@ -14,7 +14,7 @@ export function AddCategory() {
     const [show, setShow] = useState(false);
     return (
         <Fragment>
-            <button className='px-3 py-1 bg-blue-900  rounded-lg  flex justify-center gap-1 items-center text-white font-bold hover:bg-blue-800  ' onClick={() => { setShow(show => !show) }}><IoMdAdd className='scale-110 ' /> Category</button>
+            <button className='px-3 py-1 bg-blue-900 shadow-md shadow-blue-950  rounded-md  flex justify-center gap-1 items-center text-white font-bold hover:bg-blue-800  ' onClick={() => { setShow(show => !show) }}><IoMdAdd className='scale-110 ' /> Category</button>
             <AddCategoryInput show={show} setShow={setShow} />
         </Fragment>
     );
@@ -24,7 +24,7 @@ export function RemoveCategory() {
     const [show, setShow] = useState(false);
     return (
         <Fragment>
-            <button className='px-3 py-1 bg-red-700  rounded-lg  flex justify-center gap-1 items-center text-white font-bold hover:bg-red-800  ' onClick={() => { setShow(show => !show) }} ><RiDeleteBinLine /> Category</button>
+            <button className='px-3 py-1 bg-red-700 shadow-md shadow-red-900  rounded-md  flex justify-center gap-1 items-center text-white font-bold hover:bg-red-800  ' onClick={() => { setShow(show => !show) }} ><RiDeleteBinLine /> Category</button>
             <RemoveCategoryInput show={show} setShow={setShow} />
         </Fragment>
     );
