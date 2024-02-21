@@ -7,6 +7,7 @@ import Items from "@/models/item/itemSchema";
 import { z } from "zod";
 
 export async function POST(request) {
+    let db_session=null;
     try {
         const session = await getServerSession(authOptions);
         if (!session || !session.user.isAdmin) {
@@ -30,21 +31,33 @@ export async function POST(request) {
         }
         let { name, image, description, price, category, in_stock, global_order, category_order } = parsedBody.data;
         await mongoose.connect(process.env.MONGO_URL);
-        let db_category = await Categories.findOne({ category });
+        db_session=await mongoose.startSession();
+        db_session.startTransaction();
+        let db_category = await Categories.findOne({ category }).session(db_session);
         if (!db_category) {
+            await db_session.abortTransaction();
             return NextResponse.json({ ok: false, message: "No such category..", type: "Failed" }, { status: 400 });
         }
-        let db_item = await Items.findOne({ name, removed: false }).select({ name: 1 });
+        let db_item = await Items.findOne({ name, removed: false }).select({ name: 1 }).session(db_session);
         if (db_item) {
+            await db_session.abortTransaction();
             return NextResponse.json({ ok: false, message: "The item already exists", type: "Failed" }, { status: 400 });
         }
         let newItem = new Items({ name, image, description, price, category, in_stock, global_order, category_order  });
         await newItem.save();
         db_category.total++;
         await db_category.save();
+        await db_session.commitTransaction();
         return NextResponse.json({ ok: true, message: "Item added successfully", item: newItem, type: "Success" }, { status: 200 });
     }
     catch (err) {
-        return NextResponse.json({ ok: false, message: err.message, type: "Failed" }, { status: 400 });
+        try{
+            if(db_session){
+                await db_session.abortTransaction();
+            }
+        }
+        finally{
+            return NextResponse.json({ ok: false, message: err.message, type: "Failed" }, { status: 400 });
+        }
     }
 }
