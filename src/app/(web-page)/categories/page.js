@@ -1,9 +1,11 @@
-import React from 'react'
+import React, { Fragment } from 'react';
+import { FilterBar, ItemWindow } from '@/components/item/UserItemPageComponent';
 
 export default function page() {
   return (
-    <div className='h-full w-full bg-red-400'>
-      Categories page
-    </div>
+    <Fragment>
+        <FilterBar />
+        <ItemWindow />
+    </Fragment>
   )
 }

@@ -108,7 +108,7 @@ function TopBar() {
     }, [])
     return (
         <Fragment>
-            <div className='bg-blue-500 p-2 flex flex-col gap-3 items-center  md:flex-row md:justify-between md:items-center rounded-t-md mb-0.5'>
+            <div className='bg-blue-500 text-blue-950 shadow-md shadow-blue-500 border border-blue-900  p-2 flex flex-col gap-3 items-center  md:flex-row md:justify-between md:items-center rounded-t-md mb-0.5'>
                 <select className='bg-transparent text-center text-sm md:text-md border-2 border-blue-700 rounded-md w-48 p-0.5 text-white font-bold order-2 md:order-1' value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value) }} >
                     {
                         categoriesState.state == "loading" ?

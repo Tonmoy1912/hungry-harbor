@@ -7,7 +7,7 @@ export async function GET(request){
     //return all items that are not removed
     try{
         await mongoose.connect(process.env.MONGO_URL);
-        const items=await Items.find({removed:false});
+        const items=await Items.find({removed:false}).select({date:0,__v:0});
         return NextResponse.json({ok:true,items:items},{status:200});
     }
     catch(err){
