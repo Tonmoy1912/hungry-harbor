@@ -3,9 +3,9 @@ import { FilterBar, ItemWindow } from '@/components/item/UserItemPageComponent';
 
 export default function page() {
   return (
-    <Fragment>
+    <div>
         <FilterBar />
         <ItemWindow />
-    </Fragment>
+    </div>
   )
 }

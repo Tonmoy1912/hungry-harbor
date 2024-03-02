@@ -18,6 +18,7 @@ import { UpdateItemInput, AddStockInput } from './UpdateItem';
 import Image from 'next/image';
 import { progressAtom } from '@/store/progressAtom';
 import ConfirmBox from '../confirm-box/ConfirmBox';
+import { toast, Slide} from 'react-toastify';
 
 export default function AdminItemWindow() {
     const setNoti = useSetRecoilState(notiAtom);
@@ -152,6 +153,17 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
             setProgressState(false);
             if(data.ok){
                 queryClient.invalidateQueries({queryKey:["all-items"]});
+                toast.success('Set out of stock', {
+                    position: "top-center",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Slide,
+                    });
             }
             else{
                 setNoti({message:data.message,type:data.type,show:true});
@@ -189,6 +201,17 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
                     });
                     return newList;
                 });
+                toast.success('Item removed successfully', {
+                    position: "top-center",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Slide,
+                    });
             }
             else{
                 setNoti({message:data.message,type:data.type,show:true});

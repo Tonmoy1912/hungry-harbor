@@ -14,6 +14,7 @@ import { ref, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage
 import { v4 } from 'uuid';
 import { z } from "zod";
 import { useQueryClient } from '@tanstack/react-query';
+import { toast, Slide } from 'react-toastify';
 
 
 
@@ -290,40 +291,53 @@ export function UpdateItemInputInside({ show, setShow, inputField }) {
     )
 }
 
-export function AddStockInput({id, setShow}) {
-    const [add_stock,setAddStock]=useState("0");
-    const setProgressState=useSetRecoilState(progressAtom);
-    const setNoti=useSetRecoilState(notiAtom);
-    const queryClient=useQueryClient();
-    async function clickHandler(){
+export function AddStockInput({ id, setShow }) {
+    const [add_stock, setAddStock] = useState("0");
+    const setProgressState = useSetRecoilState(progressAtom);
+    const setNoti = useSetRecoilState(notiAtom);
+    const queryClient = useQueryClient();
+    async function clickHandler() {
         setProgressState(true);
-        fetch("/api/items/update-item/add-in-stock",{
-            cache:"no-store",
-            method:"POST",
+        fetch("/api/items/update-item/add-in-stock", {
+            cache: "no-store",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body:JSON.stringify({id,add_stock})
-        }).then(res=>res.json())
-        .then((res)=>{
-            if(!res.ok){
-                setNoti({message:res.message,type:res.type,show:true});
-            }
-            queryClient.invalidateQueries({queryKey:["all-items"]});
-            setProgressState(false);
-            setShow(false);
-        })
-        .catch(err=>{
-            setNoti({message:err.message,type:"Failed",show:true});
-            setProgressState(false);
-            // setShow(false);
-        })
+            body: JSON.stringify({ id, add_stock })
+        }).then(res => res.json())
+            .then((res) => {
+                if (!res.ok) {
+                    setNoti({ message: res.message, type: res.type, show: true });
+                }
+                else {
+                    toast.success('Added to stock', {
+                        position: "top-center",
+                        autoClose: 2000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Slide,
+                    });
+                }
+                queryClient.invalidateQueries({ queryKey: ["all-items"] });
+                setProgressState(false);
+                setShow(false);
+            })
+            .catch(err => {
+                setNoti({ message: err.message, type: "Failed", show: true });
+                setProgressState(false);
+                // setShow(false);
+            })
     }
     return (
         <div className='p-1 flex flex-row gap-2 justify-start   bg-blue-200 border border-blue-800 rounded-md w-auto '>
-            <input type="number" className='p-0.5 rounded-sm bg-slate-100 w-20' placeholder='Enter stocks to add' value={add_stock} onChange={(e)=>setAddStock(e.target.value)} />
+            <input type="number" className='p-0.5 rounded-sm bg-slate-100 w-20' placeholder='Enter stocks to add' value={add_stock} onChange={(e) => setAddStock(e.target.value)} />
             <button className='px-2 py-1 bg-green-700 hover:bg-green-600 rounded-lg text-white text-sm font-semibold' onClick={clickHandler}>Add</button>
-            <button className='px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm font-semibold' onClick={()=>setShow(false)}>Cancel</button>
+            <button className='px-2 py-1 bg-slate-700 hover:bg-slate-600 rounded-lg text-white text-sm font-semibold' onClick={() => setShow(false)}>Cancel</button>
         </div>
     )
 }
