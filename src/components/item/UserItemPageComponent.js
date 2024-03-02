@@ -14,6 +14,8 @@ import Image from "next/image";
 import { notiAtom } from "@/store/notiState";
 import { allItemsAtom, filteredItemsSelector } from "@/store/itemsStore";
 import { useQuery } from "@tanstack/react-query";
+import { toast, Slide, Bounce } from "react-toastify";
+import { progressAtom } from "@/store/progressAtom";
 
 let item_obj = {
     _id: "65d231a92a0184bdff61f9f5",
@@ -148,7 +150,154 @@ function TestComponent() {
     )
 }
 
+
+
+
 export function ItemCart({ item }) {
+    const setProgress = useSetRecoilState(progressAtom);
+    const setAllItems = useSetRecoilState(allItemsAtom);
+
+
+    function setInWish(item_id) {
+        setAllItems(itemList => {
+            return itemList.map(x => {
+                if (x._id == item_id) {
+                    return { ...x, in_wishlist: true }
+                }
+                else {
+                    return x;
+                }
+            })
+        })
+    }
+
+    function unsetInWish(item_id) {
+        setAllItems(itemList => {
+            return itemList.map(x => {
+                if (x._id == item_id) {
+                    return { ...x, in_wishlist: false }
+                }
+                else {
+                    return x;
+                }
+            })
+        })
+    }
+
+    function addToWishlist(item_id) {
+        setProgress(true);
+        fetch("/api/wishlist/add-to-wishlist", {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ item_id })
+        }).then(res => res.json())
+            .then(data => {
+                setProgress(false);
+                if (data.ok) {
+                    toast.success(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                    setInWish(item_id)
+                }
+                else {
+                    toast.error(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+            })
+            .catch((err) => {
+                setProgress(false);
+                toast.error(err.message, {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            })
+        return null;
+    }
+
+    function removeFromWishlist(item_id) {
+        setProgress(true);
+        fetch("/api/wishlist/remove-from-wishlist", {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ item_id })
+        }).then(res => res.json())
+            .then(data => {
+                setProgress(false);
+                if (data.ok) {
+                    toast.success(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                    unsetInWish(item_id);
+                }
+                else {
+                    toast.error(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+            })
+            .catch((err) => {
+                setProgress(false);
+                toast.error(err.message, {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            })
+        return null;
+    }
+
     return (
         <Fragment>
             <div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300">
@@ -171,8 +320,14 @@ export function ItemCart({ item }) {
                 )}</span>
                 </button>
                 <div className="pt-2 w-full px-2 text-white font-semibold border-t-2 border-black flex justify-end items-center gap-3">
-                    <TbJewishStar className="text-blue-700 scale-125" />
-                    {/* <TbJewishStarFilled className="text-blue-700 scale-125" />  */}
+                    {
+                        item.in_wishlist ? (
+                            <button><TbJewishStarFilled className="text-blue-700 scale-125" onClick={e => { e.stopPropagation(); removeFromWishlist(item._id) }} /> </button>
+                        ) : (
+                            <button><TbJewishStar className="text-blue-700 scale-125" onClick={e => { e.stopPropagation(); addToWishlist(item._id) }} /></button>
+                        )
+                    }
+
                     <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 ">Buy Now</button>
                     <button className="py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1">Add to Cart<FaCartPlus /> </button>
                 </div>
