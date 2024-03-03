@@ -1,9 +1,10 @@
-import React from 'react'
+import React,{Fragment} from 'react';
+import { PrevButton } from '@/components/button/ButtonComponents';
 
 export default function page() {
   return (
-    <div>
-      Cart page
+    <div className='p-2'>
+      <PrevButton />
     </div>
   )
 }

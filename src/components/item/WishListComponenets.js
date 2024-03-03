@@ -28,7 +28,7 @@ export function WishListWindow() {
                 });
                 res = await res.json();
                 if (res.ok) {
-                    return res.items;
+                    return res.items.reverse();
                 }
                 else {
                     toast.error(res.message, {

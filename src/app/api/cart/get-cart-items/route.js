@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import WishLists from "@/models/wishList/wishLishSchema";
+import Carts from "@/models/cart/cartSchema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
@@ -10,18 +10,21 @@ export async function GET(request){
             return NextResponse.json({ok:false,message:"User not logged in"},{status:400});
         }
         const userId=session.user.id;
-        let wishList=await WishLists.findOne({user:userId}).populate({
+        let cart=await Carts.findOne({user:userId}).populate({
             path:"items",
-            // select:"-global_order -category_order"
-            select:{
-                global_order:0,
-                category_order:0,
-                date:0,
-                __v:0
+            populate:{
+                path:"item",
+                select:{
+                    name:1,image:1,price:1,category:1,removed:1,rating:1
+                }
             }
         });
+        console.log(cart);
+        if(!cart || cart.items.length==0){
+            return NextResponse.json({ok:true,items:[]},{status:200});
+        }
         
-        return NextResponse.json({ok:true,items:!wishList?[]:wishList.items},{status:200});
+        return NextResponse.json({ok:true,items:cart.items},{status:200});
     }
     catch(err){
         return NextResponse.json({ok:false,message:err.message},{status:500});

@@ -300,8 +300,62 @@ export function ItemCart({ item }) {
                     theme: "colored",
                     transition: Bounce,
                 });
+            });
+    }
+
+    function addToCart(item_id) {
+        setProgress(true);
+        fetch("/api/cart/add-to-cart", {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ item_id })
+        }).then(res => res.json())
+            .then(data => {
+                setProgress(false);
+                if (data.ok) {
+                    toast.success(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+                else {
+                    toast.error(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
             })
-        return null;
+            .catch((err) => {
+                setProgress(false);
+                toast.error(err.message, {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            });
     }
 
     return (
@@ -335,7 +389,7 @@ export function ItemCart({ item }) {
                     }
 
                     <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 ">Buy Now</button>
-                    <button className="py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1">Add to Cart<FaCartPlus /> </button>
+                    <button className="py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1" onClick={e=>{e.stopPropagation(); addToCart(item._id);}} >Add to Cart<FaCartPlus /> </button>
                 </div>
             </div>
         </Fragment>
