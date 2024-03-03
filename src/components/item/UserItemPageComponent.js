@@ -13,9 +13,10 @@ import { TbJewishStarFilled } from "react-icons/tb";
 import Image from "next/image";
 import { notiAtom } from "@/store/notiState";
 import { allItemsAtom, filteredItemsSelector } from "@/store/itemsStore";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast, Slide, Bounce } from "react-toastify";
 import { progressAtom } from "@/store/progressAtom";
+import { wishListItemsAtom } from "@/store/itemsStore";
 
 let item_obj = {
     _id: "65d231a92a0184bdff61f9f5",
@@ -83,8 +84,10 @@ export function ItemWindow() {
     const setNoti = useSetRecoilState(notiAtom);
     const setAllItems = useSetRecoilState(allItemsAtom);
     const filteredItems = useRecoilValue(filteredItemsSelector);
+    const queryClient=useQueryClient();
     const { data: items, isLoading } = useQuery({
         queryKey: ["all-items"],
+        // staleTime:30000,//30s
         queryFn: async function () {
             try {
                 let res = await fetch("/api/items/get-items", {
@@ -112,6 +115,7 @@ export function ItemWindow() {
             setAllItems(items);
         }
     }, [isLoading, items]);
+
     return (
         <Fragment>
             <div className=" px-0.5 md:px-4 w-11/12 py-8 gap-10  flex flex-wrap justify-center md:justify-start items-center mx-auto ">
@@ -126,7 +130,7 @@ export function ItemWindow() {
                                 <span className='text-blue-950 text-2xl font-bold py-1 px-2'>No Item found</span>
                             </h1>
                         ) : (
-                            filteredItems.map(item => (<ItemCart item={item} />))
+                            filteredItems.map(item => (<ItemCart item={item} key={item.name}/>))
                         )
                     )
                 }
@@ -156,7 +160,7 @@ function TestComponent() {
 export function ItemCart({ item }) {
     const setProgress = useSetRecoilState(progressAtom);
     const setAllItems = useSetRecoilState(allItemsAtom);
-
+    const queryClient=useQueryClient();
 
     function setInWish(item_id) {
         setAllItems(itemList => {
@@ -168,7 +172,8 @@ export function ItemCart({ item }) {
                     return x;
                 }
             })
-        })
+        });
+        queryClient.invalidateQueries({queryKey: ["wishlist-itmes"]});
     }
 
     function unsetInWish(item_id) {
@@ -181,7 +186,8 @@ export function ItemCart({ item }) {
                     return x;
                 }
             })
-        })
+        });
+        queryClient.invalidateQueries({queryKey: ["wishlist-itmes"]});
     }
 
     function addToWishlist(item_id) {

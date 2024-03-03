@@ -28,6 +28,7 @@ export default function AdminItemWindow() {
     const [updateShow, setUpdateShow] = useState(false);
     const { data: items, isLoading } = useQuery({
         queryKey: ["all-items"],
+        // staleTime:30000,//30s
         queryFn: async function () {
             try {
                 let res = await fetch("/api/items/get-items", {

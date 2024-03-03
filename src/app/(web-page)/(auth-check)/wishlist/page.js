@@ -1,9 +1,12 @@
-import React from 'react'
+import React,{Fragment} from 'react';
+import { PrevButton } from '@/components/button/ButtonComponents';
+import { WishListWindow } from '@/components/item/WishListComponenets';
 
 export default function page() {
   return (
-    <div>
-      Wishlist page
+    <div className='p-2'>
+      <PrevButton />
+      <WishListWindow />
     </div>
   )
 }

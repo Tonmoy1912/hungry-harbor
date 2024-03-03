@@ -6,6 +6,11 @@ export const allItemsAtom=atom({
     default:[]
 });
 
+export const wishListItemsAtom=atom({
+    key:"wishListItemsAtom",
+    default:[],
+});
+
 export const searchAtom=atom({
     key:"searchAtom",
     default:""
