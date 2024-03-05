@@ -57,6 +57,7 @@ export function WishListWindow() {
                     theme: "colored",
                     transition: Bounce,
                 });
+                return [];
             }
         }
     });
@@ -99,6 +100,7 @@ export function WishlistItemCart({ item }) {
     const queryClient = useQueryClient();
     const setWishListItems = useSetRecoilState(wishListItemsAtom);
     const [showConfirmBox,setShowConfirmBox]=useState(false);
+    const [processing,setProcessing]=useState(false);
 
     function unsetInWish(item_id) {
         queryClient.invalidateQueries({ queryKey: ["all-items"] })
@@ -164,6 +166,64 @@ export function WishlistItemCart({ item }) {
             });
     }
 
+    function addToCart(item_id) {
+        setProgress(true);
+        setProcessing(true);
+        fetch("/api/cart/add-to-cart", {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ item_id })
+        }).then(res => res.json())
+            .then(data => {
+                setProgress(false);
+                setProcessing(false);
+                if (data.ok) {
+                    toast.success(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+                else {
+                    toast.error(data.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+            })
+            .catch((err) => {
+                setProgress(false);
+                setProcessing(false);
+                toast.error(err.message, {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            });
+    }
+
     return (
         <Fragment>
             <div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300">
@@ -188,7 +248,13 @@ export function WishlistItemCart({ item }) {
                 <div className="pt-2 w-full px-2 text-white font-semibold border-t-2 border-black flex justify-end items-center gap-3">
                     <button><TbJewishStarFilled className="text-blue-700 scale-125" onClick={e => { e.stopPropagation(); setShowConfirmBox(true); }} /> </button>
                     <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 ">Buy Now</button>
-                    <button className="py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1">Add to Cart<FaCartPlus /> </button>
+                    {
+                        processing?(
+                            <button className="py-1 px-2 rounded-md bg-blue-700 animate-pulse">Processing...</button>
+                        ):(
+                            <button className="py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1" onClick={e=>{e.stopPropagation(); addToCart(item._id);}} >Add to Cart<FaCartPlus /> </button>
+                        )
+                    }
                 </div>
             </div>
             <ConfirmBox show={showConfirmBox} onYes={()=>{removeFromWishlist(item._id);setShowConfirmBox(false);}} onCancel={()=>{setShowConfirmBox(false)}} text={"Remove from wishlist"} />

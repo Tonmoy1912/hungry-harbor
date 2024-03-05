@@ -238,9 +238,9 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
                     <button className='px-1.5 py-0.5 rounded-lg bg-cyan-600 text-white text-xs font-semibold' disabled={true}>{item.category}</button>
                     <button className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex gap-1 items-center ' disabled={true}> <MdOutlineRateReview className='scale-125' />  <span>{item.total_review}</span></button>
                     <button className='px-1.5  rounded-lg  text-black text-xs font-bold flex gap-1 items-center ' disabled={true}> <FaRupeeSign className='scale-125' />  <span className='text-lg'>{item.price}</span></button>
-                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex flex-col items-start md:flex-row gap-1 md:items-center ' > <span> In Stock: {item.in_stock!=0?(item.in_stock):(
+                    <div className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex flex-col items-start md:flex-row gap-1 md:items-center ' > <span> In Stock: {item.in_stock!=0?(item.in_stock):(
                         <button className='px-1.5 py-0.5 rounded-lg bg-red-600 text-white text-xs font-semibold' disabled={true}>Out of Stock </button>
-                    )}</span> </button>
+                    )}</span> </div>
                     <div className='flex gap-3'>
                         <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-xs font-semibold' disabled={true}>Global order: {item.global_order} </button>
                         <button className='px-1.5 py-0.5 rounded-lg bg-slate-600 text-white text-xs font-semibold' disabled={true}>Categorical order: {item.category_order}</button>

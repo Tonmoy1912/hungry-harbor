@@ -16,6 +16,11 @@ export const searchAtom=atom({
     default:""
 });
 
+export const cartItemsAtom=atom({
+    key:"cartItemsAtom",
+    default:[]
+});
+
 export const filteredItemsSelector=selector({
     key:"filteredItemsSelector",
     get:({get})=>{
@@ -47,5 +52,23 @@ export const filteredItemsSelector=selector({
         });
         return filteredItems;
     }
-})
+});
+
+export const cartSummarySelector=selector({
+    key:"cartSummarySelector",
+    get:({get})=>{
+        const cartItems=get(cartItemsAtom);
+        let total_item=0,total_price=0,out_of_stock=0;
+        for( let x of cartItems){
+            if(x.item.in_stock!=0){
+                total_item+=x.quantity;
+                total_price+=x.quantity*x.item.price;
+            }
+            else{
+                out_of_stock++;
+            }
+        }
+        return {total_item,total_price,out_of_stock};
+    }
+});
 

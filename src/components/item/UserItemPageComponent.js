@@ -160,6 +160,7 @@ function TestComponent() {
 export function ItemCart({ item }) {
     const setProgress = useSetRecoilState(progressAtom);
     const setAllItems = useSetRecoilState(allItemsAtom);
+    const [processing,setProcessing]=useState(false);
     const queryClient=useQueryClient();
 
     function setInWish(item_id) {
@@ -305,6 +306,7 @@ export function ItemCart({ item }) {
 
     function addToCart(item_id) {
         setProgress(true);
+        setProcessing(true);
         fetch("/api/cart/add-to-cart", {
             cache: "no-store",
             method: "POST",
@@ -315,6 +317,7 @@ export function ItemCart({ item }) {
         }).then(res => res.json())
             .then(data => {
                 setProgress(false);
+                setProcessing(false);
                 if (data.ok) {
                     toast.success(data.message, {
                         position: "top-center",
@@ -344,6 +347,7 @@ export function ItemCart({ item }) {
             })
             .catch((err) => {
                 setProgress(false);
+                setProcessing(false);
                 toast.error(err.message, {
                     position: "top-center",
                     autoClose: 3000,
@@ -389,7 +393,13 @@ export function ItemCart({ item }) {
                     }
 
                     <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 ">Buy Now</button>
-                    <button className="py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1" onClick={e=>{e.stopPropagation(); addToCart(item._id);}} >Add to Cart<FaCartPlus /> </button>
+                    {
+                        processing?(
+                            <button className="py-1 px-2 rounded-md bg-blue-700 animate-pulse">Processing...</button>
+                        ):(
+                            <button className={`py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1 `} onClick={e=>{e.stopPropagation(); addToCart(item._id);}} >Add to Cart<FaCartPlus /> </button>
+                        )
+                    }
                 </div>
             </div>
         </Fragment>
