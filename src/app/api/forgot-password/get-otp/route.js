@@ -4,10 +4,12 @@ import Users from "@/models/user/userSchema";
 import jwt from 'jsonwebtoken';
 import { cookies } from "next/headers";
 import transporter from "@/config/nodemailer-config";
+import bcrypt from "bcrypt";
 
 // Function to generate a random 6-digit number
 function generateRandomNumber() {
-    return Math.floor(100000 + Math.random() * 900000);
+    const num=Math.floor(100000 + Math.random() * 900000);
+    return String(num);
 }
 
 export async function POST(request) {
@@ -24,7 +26,9 @@ export async function POST(request) {
         }
         const cookieStore = cookies();
         const otp = generateRandomNumber();
-        const tokenObj = { email: body.email, generated_otp: otp };
+        const salt = await bcrypt.genSalt(10);
+        const hashedOTP = await bcrypt.hash(otp, salt);
+        const tokenObj = { email: body.email, generated_otp: hashedOTP };
         // console.log(tokenObj);
         const token = jwt.sign(tokenObj, process.env.FORGOT_PASSWORD_KEY, { expiresIn: 5 * 60 });//in second
         //setting the token inside cookie

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import jwt from 'jsonwebtoken';
 import { cookies } from "next/headers";
+import bcrypt from "bcrypt";
 
 export async function POST(request) {
     try {
-        const body = await request.json();
+        let body = await request.json();
         body.otp = body.otp.trim();
-        body.otp=parseInt(body.otp);
         const cookieStore = cookies();
         let token=cookieStore.get("otp-token");
         if(!token){
@@ -15,11 +15,14 @@ export async function POST(request) {
         // console.log("token",token);
         token=token.value;
         let tokenObj=jwt.verify(token,process.env.FORGOT_PASSWORD_KEY);
-        if(tokenObj.generated_otp!=body.otp){
+        // console.log("body type",typeof body.otp);
+        // console.log("hashed otp type",typeof tokenObj.generated_otp);
+        const isMatched = await bcrypt.compare(body.otp,tokenObj.generated_otp);
+        if(!isMatched){
             return NextResponse.json({ok:false,message:"Invalid otp"},{status:400});
         }
         const {email,generated_otp}=tokenObj
-        tokenObj={email,generated_otp,received_otp:body.otp};
+        tokenObj={email,generated_otp,received_otp:generated_otp};
         // console.log(tokenObj);
         token=jwt.sign(tokenObj,process.env.FORGOT_PASSWORD_KEY, { expiresIn: 5 * 60 });//in second
         cookieStore.set("otp-token", token);
