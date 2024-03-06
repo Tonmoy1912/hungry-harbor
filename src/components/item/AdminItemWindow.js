@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { progressAtom } from '@/store/progressAtom';
 import ConfirmBox from '../confirm-box/ConfirmBox';
 import { toast, Slide} from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 export default function AdminItemWindow() {
     const setNoti = useSetRecoilState(notiAtom);
@@ -136,6 +137,7 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
     const setCategories=useSetRecoilState(categoryAtom);
     const [showConfirmBox,setShowConfirmBox]=useState(false);
     const queryClient=useQueryClient();
+    const router=useRouter();
     function editClickHandler() {
         setUpdateData({ ...item });
         setUpdateShow(true);
@@ -256,7 +258,7 @@ function AdminItemBox({ item, setUpdateData, setUpdateShow }) {
                     </div>
                 </div>
                 <div className='relative mt-4  md:absolute bottom-2 right-2 flex gap-3 items-center justify-self-end md:mt-4  px-2 text-sm self-end'>
-                    <button className='px-2 py-1 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center ' > View <MdOutlinePreview className='scale-110' /> </button>
+                    <button className='px-2 py-1 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center ' onClick={(e)=>{e.stopPropagation();setProgressState(true);router.push(`/items/${item._id}`);}}> View <MdOutlinePreview className='scale-110' /> </button>
                     <button className='px-2 py-1 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center' onClick={editClickHandler} > Edit <FaRegEdit className='scale-110' /></button>
                     <button className='px-2 py-1 rounded-md bg-red-700 hover:bg-red-600 text-white text-xs font-semibold flex gap-1 items-center' onClick={()=>{setShowConfirmBox(true)}} > Remove <RiDeleteBinLine /></button>
                     

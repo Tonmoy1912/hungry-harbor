@@ -9,6 +9,7 @@ import { progressAtom } from "@/store/progressAtom";
 import { useSetRecoilState, useRecoilState, useRecoilValue } from "recoil";
 import { useQuery } from "@tanstack/react-query";
 import { cartItemsAtom, cartSummarySelector } from "@/store/itemsStore";
+import { useRouter } from "next/navigation";
 
 
 export function CartWindow() {
@@ -90,6 +91,7 @@ export function CartWindow() {
 export function CartItem({ data, setItems }) {
     const [price,setPrice]=useState(data.item.price);
     const setProgress = useSetRecoilState(progressAtom);
+    const router=useRouter();
     function IncrementCount(item_id) {
         setPrice(prev=>prev+data.item.price);
         setItems(items=>{
@@ -195,7 +197,7 @@ export function CartItem({ data, setItems }) {
                     )}</span> </div>
                 </div>
                 <div className='relative mt-4  md:absolute bottom-2 right-2 flex gap-3 items-center justify-self-end md:mt-4  px-2 text-sm self-end'>
-                    <button className='px-2 py-1.5 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center ' > View </button>
+                    <button className='px-2 py-1.5 rounded-md bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold flex gap-1 items-center ' onClick={(e)=>{e.stopPropagation();setProgress(true);router.push(`/items/${data.item._id}`);}}> View </button>
                     <button className='px-2 py-1.5 rounded-md bg-red-700 hover:bg-red-600 text-white text-xs font-semibold flex gap-1 items-center' onClick={e => { e.stopPropagation(); removeFromCart(data.item._id); }}  > Remove </button>
                     {
                         data.item.in_stock > 0 && (
