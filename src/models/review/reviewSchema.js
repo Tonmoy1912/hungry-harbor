@@ -11,9 +11,11 @@ const reviewSchema = new mongoose.Schema({
     },
     review:{
         type: String,
+        require:true
     },
     rating:{
         type:Number,
+        default:5,
     }
 });
 
