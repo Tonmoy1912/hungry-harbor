@@ -8,6 +8,7 @@ import { MdOutlineRateReview } from "react-icons/md";
 import { FaRupeeSign } from "react-icons/fa";
 import { IoStarSharp } from "react-icons/io5";
 import { StopProgress } from '@/components/util/util';
+import { ReviewWindow } from '@/components/review/ReviewComponents';
 
 export default async function page({ params }) {
     try {
@@ -24,7 +25,7 @@ export default async function page({ params }) {
         }
         return (
             <Fragment >
-                <div className='mx-2 my-2 p-2  bg-slate-100 shadow-md shadow-slate-500 flex flex-col sm:flex-row items-start rounded-sm'>
+                <div className='mx-2 my-2 p-2  bg-slate-200 shadow-md shadow-slate-500 flex flex-col sm:flex-row items-start rounded-sm'>
                     <div className='h-56 w-full sm:h-80 sm:w-1/2'>
                         <Image src={item.image} alt={`${item.name}-image`} height={500} width={500} className='h-full w-full rounded-sm' />
                     </div>
@@ -43,6 +44,7 @@ export default async function page({ params }) {
                     </div>
                 </div>
                 <StopProgress />
+                <ReviewWindow />
             </Fragment>
         )
     }
