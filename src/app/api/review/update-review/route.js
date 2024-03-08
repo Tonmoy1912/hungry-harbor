@@ -20,7 +20,7 @@ export async function POST(request){
 
         const bodySchema=z.object({
             itemId:z.string().trim().min(1),
-            review:z.string().trim().min(1),
+            review:z.string().trim(),
             rating:z.coerce.number().int().positive().max(5),
         });
         const parsedData=bodySchema.safeParse(body);

@@ -9,7 +9,7 @@ export default function Navbar({ children }) {
         <Fragment>
             <TopBar />
             <LeftBar />
-            <div className='pt-12 pl-0 sm:pl-56 md:pl-64 w-full min-h-screen bg-blue-50'>
+            <div className='pt-12 pl-0 sm:pl-56 md:pl-64 w-full min-h-screen bg-white'>
                 {children}
             </div>
         </Fragment>

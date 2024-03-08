@@ -41,7 +41,12 @@ export async function POST(request) {
         }
         let total_rating = item.total_review * item.rating;
         item.total_review--;
-        item.rating = (total_rating - prevReview.rating ) / item.total_review;
+        if(item.total_review==0){
+            item.rating=0;
+        }
+        else{
+            item.rating = (total_rating - prevReview.rating ) / item.total_review;
+        }
         await item.save();
         await Reviews.findByIdAndDelete(reviewId).session(db_session);
         await db_session.commitTransaction();

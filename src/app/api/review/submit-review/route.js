@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import Reviews from "@/models/review/reviewSchema";
 import Items from "@/models/item/itemSchema";
+import Users from "@/models/user/userSchema";
 import  {z} from 'zod';
 
 export async function POST(request){
@@ -20,7 +21,7 @@ export async function POST(request){
 
         const bodySchema=z.object({
             itemId:z.string().trim().min(1),
-            review:z.string().trim().min(1),
+            review:z.string().trim(),
             rating:z.coerce.number().int().positive().max(5)
         });
         const parsedData=bodySchema.safeParse(body);
@@ -46,11 +47,12 @@ export async function POST(request){
         item.total_review++;
         item.rating=(total_rating+rating)/item.total_review;
         const newReview=new Reviews({user:userId,item:itemId,rating,review});
-        await newReview.save()
+        await newReview.save();
         await item.save();
         await db_session.commitTransaction();
         db_session=null;
-        return NextResponse.json({ok:true,message:"Review submitted successfully."},{status:200});
+        let addedReview={_id:newReview._id,rating:rating,review:review,user:session.user};
+        return NextResponse.json({ok:true,message:"Review submitted successfully.",review:addedReview},{status:200});
     }
     catch(err){
         try{

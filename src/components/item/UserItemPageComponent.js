@@ -366,7 +366,7 @@ export function ItemCart({ item }) {
     return (
         <Fragment>
             <div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300 cursor-pointer" onClick={()=>{setProgress(true);router.push(`/items/${item._id}`);}}>
-                <div className="w-full h-60  ">
+                <div className="w-full h-52  ">
                     <Image src={item.image} alt={`${item.name}-image`} height={400} width={400} className="h-full w-full rounded-md" />
                 </div>
                 <div className=" w-full flex justify-between items-center">
