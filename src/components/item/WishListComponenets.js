@@ -102,6 +102,7 @@ export function WishlistItemCart({ item }) {
     const setWishListItems = useSetRecoilState(wishListItemsAtom);
     const [showConfirmBox,setShowConfirmBox]=useState(false);
     const [processing,setProcessing]=useState(false);
+    const [buyProcessing, setBuyProcessing] = useState(false);
     const router=useRouter();
 
     function unsetInWish(item_id) {
@@ -226,6 +227,52 @@ export function WishlistItemCart({ item }) {
             });
     }
 
+    function buyNowHandler(item_id) {
+        setBuyProcessing(true);
+        fetch("/api/cart/add-to-cart", {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ item_id, toBuy: true })
+        }).then(res => res.json())
+        .then(res=>{
+            setBuyProcessing(false);
+            if(res.ok){
+                setProgress(true);
+                router.push("/cart");
+            }
+            else{
+                toast.error(res.message, {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            }
+        })
+        .catch(err=>{
+            setBuyProcessing(false);
+            toast.error(err.message, {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        })
+    }
+
     return (
         <Fragment>
             <div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300 cursor-pointer" onClick={()=>{setProgress(true);router.push(`/items/${item._id}`);}}>
@@ -249,7 +296,15 @@ export function WishlistItemCart({ item }) {
                 </button>
                 <div className="pt-2 w-full px-2 text-white font-semibold border-t-2 border-black flex justify-end items-center gap-3">
                     <button><TbJewishStarFilled className="text-blue-700 scale-125" onClick={e => { e.stopPropagation(); setShowConfirmBox(true); }} /> </button>
-                    <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 ">Buy Now</button>
+
+                    {
+                        buyProcessing ? (
+                            <button className="py-1 px-2 rounded-md bg-blue-700 animate-pulse">Processing...</button>
+                        ) : (
+                            <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 " onClick={e => { e.stopPropagation(); buyNowHandler(item._id); }} >Buy Now</button>
+                        )
+                    }
+
                     {
                         processing?(
                             <button className="py-1 px-2 rounded-md bg-blue-700 animate-pulse">Processing...</button>

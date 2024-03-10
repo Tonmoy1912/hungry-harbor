@@ -286,7 +286,7 @@ function ReviewList({ itemId, reviews, setReviews, cache }) {
 
 
     return (
-        <div className='h-96 bg-slate-100 rounded-md overflow-clip border border-blue-950'>
+        <div className='h-96 bg-slate-100  overflow-clip border border-slate-400'>
             <InfiniteLoader
                 isRowLoaded={isRowLoaded}
                 loadMoreRows={isLoadingNextPage ? () => { } : fetchMorePage}
@@ -327,14 +327,14 @@ export function ReviewBox({ index, style, parent, reviews, cache, setConfirmBox 
         >
             {
                 index < reviews.length ? (
-                    <div style={style} className=' bg-slate-100 border border-black flex flex-col gap-1 p-1 items-start'>
+                    <div style={style} className=' bg-slate-100 border border-slate-400 flex flex-col gap-1 p-1 items-start'>
                         <h1 className=' font-bold'>{reviews[index].user.name}</h1>
                         <div className='flex justify-start items-center gap-1 text-sm px-1'>
                             <RateComponent rating={reviews[index].rating} />
                         </div>
                         <p className='p-1 text-sm text-slate-900'>{reviews[index].review}</p>
                         {session && (session.id == reviews[index].user._id || session.isAdmin) &&
-                            <button className='bg-red-700 hover:bg-red-600 px-1 py-0.5 text-xs rounded-md text-white' onClick={e => { e.stopPropagation(); setConfirmBox({ show: true, reviewId: reviews[index]._id }); }}>Delete</button>
+                            <button className='ml-1 bg-red-700 hover:bg-red-600 px-1 py-0.5 text-xs rounded-md text-white' onClick={e => { e.stopPropagation(); setConfirmBox({ show: true, reviewId: reviews[index]._id }); }}>Delete</button>
                         }
                     </div>
                 ) : (

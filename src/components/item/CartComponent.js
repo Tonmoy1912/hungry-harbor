@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Fragment, useEffect, useState } from "react";
-import { MdOutlineRateReview } from "react-icons/md";
+import { IoStarSharp } from "react-icons/io5";
 import { FaRupeeSign } from "react-icons/fa";
 import Image from "next/image";
 import { toast, Slide, Bounce } from "react-toastify";
@@ -10,10 +10,13 @@ import { useSetRecoilState, useRecoilState, useRecoilValue } from "recoil";
 import { useQuery } from "@tanstack/react-query";
 import { cartItemsAtom, cartSummarySelector } from "@/store/itemsStore";
 import { useRouter } from "next/navigation";
+import Notification from "../notification/Notification";
+import { notiAtom } from "@/store/notiState";
 
 
 export function CartWindow() {
     const [items,setItems]=useRecoilState(cartItemsAtom);
+    const setProgress = useSetRecoilState(progressAtom);
 
     const { data, isLoading: loading } = useQuery({
         queryKey: ["cartitems"],
@@ -64,6 +67,11 @@ export function CartWindow() {
         }
     }, [loading, data]);
 
+    useEffect(()=>{
+        setProgress(false);
+    },[]);
+
+    
     if (loading) {
         return (
             <h1 className="text-2xl font-bold text-blue-900 animate-pulse py-6">
@@ -72,12 +80,13 @@ export function CartWindow() {
         )
     }
 
+
     return (
         <div className="relative p-3 flex flex-col gap-2">
             {
                 items.length == 0 ? (
                     <h1 className="text-2xl font-bold text-blue-900 ">
-                        No item found
+                        No items found
                     </h1>
                 ) : (
                     items.map(item => <CartItem data={item} key={item.item._id} setItems={setItems} />)
@@ -190,7 +199,7 @@ export function CartItem({ data, setItems }) {
                 <div className='w-full md:w-2/3 md:h-full p-1.5 flex flex-col justify-start gap-1.5 items-start pl-4'>
                     <h1 className='text-xl text-black font-bold'>{data.item.name}</h1>
                     <button className='px-1.5 py-0.5 rounded-lg bg-cyan-600 text-white text-xs font-semibold' disabled={true}>{data.item.category}</button>
-                    <button className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex gap-1 items-center ' disabled={true}> <MdOutlineRateReview className='scale-125' />  <span>{data.item.total_review}</span></button>
+                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-xs font-semibold flex gap-1 items-center ' disabled={true}>  <span>{data.item.total_review != 0 ? data.item.rating : "Unrated"}</span> <IoStarSharp />  </button>
                     <button className='px-1.5  rounded-lg  text-black text-xs font-bold flex gap-1 items-center ' disabled={true}> <FaRupeeSign className='scale-125' />  <span className='text-lg'>{price}</span></button>
                     <div className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex flex-col items-start md:flex-row gap-1 md:items-center ' > <span> In Stock: {data.item.in_stock != 0 ? (data.item.in_stock) : (
                         <button className='px-1.5 py-0.5 rounded-lg bg-red-600 text-white text-xs font-semibold' disabled={true}>Out of Stock </button>
@@ -215,7 +224,64 @@ export function CartItem({ data, setItems }) {
 }
 
 export function CartSummary(){
-    const cart_summary=useRecoilValue(cartSummarySelector)
+    const cart_summary=useRecoilValue(cartSummarySelector);
+    const cartsItems=useRecoilValue(cartItemsAtom);
+    const [processing,setProcessing]=useState(false);
+    const setProgress=useSetRecoilState(progressAtom);
+    const setNoti=useSetRecoilState(notiAtom);
+    const router=useRouter();
+
+    function placeOrderHandler(){
+        setProcessing(true);
+        fetch("api/cart/validate-stock",{
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ items:cartsItems })
+        }).then(res=>res.json())
+        .then(res=>{
+            setProcessing(false);
+            if(res.ok){
+                //redirect to order summary page
+                setProgress(true);
+                router.push("/orders/order-summary");
+            }
+            else{
+                if(res.type=="Info"){
+                    setNoti({show:true,message:res.message,type:res.type});
+                }
+                else{
+                    toast.error(res.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+            }
+        })
+        .catch((err)=>{
+            setProcessing(false);
+            toast.error(err.message, {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        });
+    }
     return (
         <div className="sticky bottom-2 p-1  bg-slate-200  flex flex-col gap-2 shadow-sm shadow-slate-600">
             <div className=" flex justify-between items-center ">
@@ -226,7 +292,15 @@ export function CartSummary(){
                 <span>Out of stock</span>
                 <span> {cart_summary.out_of_stock} </span>
             </div>
-            <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `}>Place order</button>
+            <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `} onClick={e=>{e.stopPropagation();placeOrderHandler();}}>
+                {
+                    processing?(
+                        <span className="animate-pulse">Processing...</span>
+                    ):(
+                        <span>Place order</span>
+                    )
+                }
+            </button>
         </div>
     )
 }

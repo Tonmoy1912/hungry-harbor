@@ -84,7 +84,7 @@ export function ItemWindow() {
     const setNoti = useSetRecoilState(notiAtom);
     const setAllItems = useSetRecoilState(allItemsAtom);
     const filteredItems = useRecoilValue(filteredItemsSelector);
-    const queryClient=useQueryClient();
+    const queryClient = useQueryClient();
     const { data: items, isLoading } = useQuery({
         queryKey: ["all-items"],
         // staleTime:30000,//30s
@@ -130,7 +130,7 @@ export function ItemWindow() {
                                 <span className='text-blue-950 text-2xl font-bold py-1 px-2'>No Item found</span>
                             </h1>
                         ) : (
-                            filteredItems.map(item => (<ItemCart item={item} key={item.name}/>))
+                            filteredItems.map(item => (<ItemCart item={item} key={item.name} />))
                         )
                     )
                 }
@@ -160,9 +160,10 @@ function TestComponent() {
 export function ItemCart({ item }) {
     const setProgress = useSetRecoilState(progressAtom);
     const setAllItems = useSetRecoilState(allItemsAtom);
-    const [processing,setProcessing]=useState(false);
-    const queryClient=useQueryClient();
-    const router=useRouter();
+    const [processing, setProcessing] = useState(false);
+    const [buyProcessing, setBuyProcessing] = useState(false);
+    const queryClient = useQueryClient();
+    const router = useRouter();
 
     function setInWish(item_id) {
         setAllItems(itemList => {
@@ -175,7 +176,7 @@ export function ItemCart({ item }) {
                 }
             })
         });
-        queryClient.invalidateQueries({queryKey: ["wishlist-itmes"]});
+        queryClient.invalidateQueries({ queryKey: ["wishlist-itmes"] });
     }
 
     function unsetInWish(item_id) {
@@ -189,7 +190,7 @@ export function ItemCart({ item }) {
                 }
             })
         });
-        queryClient.invalidateQueries({queryKey: ["wishlist-itmes"]});
+        queryClient.invalidateQueries({ queryKey: ["wishlist-itmes"] });
     }
 
     function addToWishlist(item_id) {
@@ -363,9 +364,55 @@ export function ItemCart({ item }) {
             });
     }
 
+    function buyNowHandler(item_id) {
+        setBuyProcessing(true);
+        fetch("/api/cart/add-to-cart", {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ item_id, toBuy: true })
+        }).then(res => res.json())
+        .then(res=>{
+            setBuyProcessing(false);
+            if(res.ok){
+                setProgress(true);
+                router.push("/cart");
+            }
+            else{
+                toast.error(res.message, {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            }
+        })
+        .catch(err=>{
+            setBuyProcessing(false);
+            toast.error(err.message, {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        })
+    }
+
     return (
         <Fragment>
-            <div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300 cursor-pointer" onClick={()=>{setProgress(true);router.push(`/items/${item._id}`);}}>
+            <div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300 cursor-pointer" onClick={() => { setProgress(true); router.push(`/items/${item._id}`); }}>
                 <div className="w-full h-52  ">
                     <Image src={item.image} alt={`${item.name}-image`} height={400} width={400} className="h-full w-full rounded-md" />
                 </div>
@@ -393,12 +440,20 @@ export function ItemCart({ item }) {
                         )
                     }
 
-                    <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 ">Buy Now</button>
                     {
-                        processing?(
+                        buyProcessing ? (
                             <button className="py-1 px-2 rounded-md bg-blue-700 animate-pulse">Processing...</button>
-                        ):(
-                            <button className={`py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1 `} onClick={e=>{e.stopPropagation(); addToCart(item._id);}} >Add to Cart<FaCartPlus /> </button>
+                        ) : (
+                            <button className="py-1 px-2 rounded-md bg-blue-800 hover:bg-blue-700 " onClick={e => { e.stopPropagation(); buyNowHandler(item._id); }} >Buy Now</button>
+                        )
+                    }
+
+                    
+                    {
+                        processing ? (
+                            <button className="py-1 px-2 rounded-md bg-blue-700 animate-pulse">Processing...</button>
+                        ) : (
+                            <button className={`py-1 px-2 rounded-md bg-blue-700 hover:bg-blue-600 flex items-center gap-1 `} onClick={e => { e.stopPropagation(); addToCart(item._id); }} >Add to Cart<FaCartPlus /> </button>
                         )
                     }
                 </div>
