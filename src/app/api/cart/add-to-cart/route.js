@@ -45,7 +45,6 @@ export async function POST(request){
         return NextResponse.json({ok:true,message:"Added to cart"},{status:200});
     }
     catch(err){
-        console.log(err);
         return NextResponse.json({ok:false,message:err.message},{status:500});
     }
 }

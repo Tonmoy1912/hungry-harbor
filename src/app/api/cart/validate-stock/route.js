@@ -7,7 +7,6 @@ export async function POST(request){
     try{
         const body=await request.json();
         const {items}=body;
-        // console.log("items",items);
         let in_stock=true;
         await mongoose.connect(process.env.MONGO_URL);
         let message="Only";

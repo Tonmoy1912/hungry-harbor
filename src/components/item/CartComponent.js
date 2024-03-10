@@ -233,7 +233,7 @@ export function CartSummary(){
 
     function placeOrderHandler(){
         setProcessing(true);
-        fetch("api/cart/validate-stock",{
+        fetch("/api/cart/validate-stock",{
             cache: "no-store",
             method: "POST",
             headers: {

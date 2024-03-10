@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, Fragment } from 'react';
+import React, { useEffect, Fragment, useState } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { progressAtom } from '@/store/progressAtom';
 import { cartSummarySelector } from '@/store/itemsStore';
@@ -9,6 +9,9 @@ import { PrevButton } from '@/components/button/ButtonComponents';
 import { IoStarSharp } from "react-icons/io5";
 import { FaRupeeSign } from "react-icons/fa";
 import Image from "next/image";
+import Script from 'next/script';
+import { toast, Slide, Bounce } from 'react-toastify';
+import { notiAtom } from '@/store/notiState';
 
 export default function page() {
     const setProgress = useSetRecoilState(progressAtom);
@@ -20,6 +23,7 @@ export default function page() {
     }, []);
     return (
         <div className='p-2'>
+
             <PrevButton />
             <h1 className='text-center text-2xl p-1 font-bold'>Order Summary</h1>
             <div className="relative flex flex-col py-2 px-4">
@@ -63,6 +67,94 @@ function ItemComponent({ data }) {
 
 export function PricingSummary() {
     const cart_summary = useRecoilValue(cartSummarySelector);
+    const cartsItems = useRecoilValue(cartItemsAtom);
+    const [processing, setProcessing] = useState(false);
+    const [isDisabled, setIsDisabled] = useState(true);
+    const setNoti = useSetRecoilState(notiAtom);
+
+    async function makePaymentHandler() {
+        try {
+            setProcessing(true);
+            let res = await fetch("/api/payment/create-order", {
+                cache: "no-store",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ items: cartsItems })
+            });
+            res = await res.json();
+            setProcessing(false);
+            if (!res.ok) {
+                if (res.type == "Info") {
+                    setNoti({ show: true, message: res.message, type: res.type });
+                }
+                else {
+                    toast.error(res.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+                return;
+            }
+            //create the payment checkout
+            let options = {
+                "key": res.key, // Enter the Key ID generated from the Dashboard
+                "amount": res.order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                "currency": res.order.currency,
+                "name": "Hungry Harbor", //your business name
+                "description": "Test Transaction",
+                "order_id": res.order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                "handler": function (response) {
+                    // alert(response.razorpay_payment_id);
+                    // alert(response.razorpay_order_id);
+                    // alert(response.razorpay_signature)
+                    console.log("Payment success",response);
+                },
+                "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
+                    "name": res.user.name, //your customer's name
+                    "email": res.user.email,
+                    "contact": res.user.phone //Provide the customer's phone number for better conversion rates 
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            let rzp1 = new window.Razorpay(options);
+            rzp1.on('payment.failed', function (response) {
+                // alert(response.error.code);
+                // alert(response.error.description);
+                // alert(response.error.source);
+                // alert(response.error.step);
+                // alert(response.error.reason);
+                // alert(response.error.metadata.order_id);
+                // alert(response.error.metadata.payment_id);
+                console.log("Payment failed",response);
+            });
+            rzp1.open();
+        }
+        catch (err) {
+            setProcessing(false);
+            toast.error(err.message, {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+        }
+    }
 
     return (
         <div className="sticky bottom-2 p-1  bg-slate-200  flex flex-col gap-2 shadow-sm shadow-slate-600">
@@ -74,9 +166,16 @@ export function PricingSummary() {
                 <span>Out of stock</span>
                 <span> {cart_summary.out_of_stock} </span>
             </div>
-            <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `} >
-                <span>Make Payment</span>
+            <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `} disabled={isDisabled} onClick={e=>{e.stopPropagation();makePaymentHandler();}} >
+                {
+                    processing ? (
+                        <span className="animate-pulse">Processing...</span>
+                    ) : (
+                        <span>Make Payment</span>
+                    )
+                }
             </button>
+            <Script src="https://checkout.razorpay.com/v1/checkout.js" onReady={() => { setIsDisabled(false) }} />
         </div>
     )
 }
