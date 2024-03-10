@@ -2,24 +2,49 @@ import mongoose from "mongoose";
 import { itemSchema } from "../item/itemSchema";
 
 const orderSchema = new mongoose.Schema({
-    items:[{
-        type: itemSchema
+    items: [{
+        item: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'items'
+        },
+        quantity: {
+            type: Number,
+            require: true
+        }
     }],
-    date:{
+    orderId: {
+        type: String,
+        default: null
+    },
+    paymentId: {
+        type: String,
+        default: null
+    },
+    date: {
         type: Date,
         default: Date.now
     },
-    total_price:{
+    total_amount: {
         type: Number,
-        require:true
+        require: true,
+        default: 0
     },
-    user:{
+    paid: {
+        type: Boolean,
+        default: false
+    },
+    payment_failed: {
+        type: Boolean,
+        default: false
+    },
+    user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'users'
+        ref: 'users',
+        default: null
     }
 });
 
-const Orders=mongoose.models.orders || mongoose.model("orders",orderSchema);
+const Orders = mongoose.models.orders || mongoose.model("orders", orderSchema);
 
 export default Orders;
 

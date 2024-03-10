@@ -116,7 +116,19 @@ export function PricingSummary() {
                     // alert(response.razorpay_payment_id);
                     // alert(response.razorpay_order_id);
                     // alert(response.razorpay_signature)
-                    console.log("Payment success",response);
+                    //write payment success client handle logic here
+                    // console.log("Payment success",response);
+                    toast.success("Payment successfull.", {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
                 },
                 "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
                     "name": res.user.name, //your customer's name
@@ -136,7 +148,19 @@ export function PricingSummary() {
                 // alert(response.error.reason);
                 // alert(response.error.metadata.order_id);
                 // alert(response.error.metadata.payment_id);
-                console.log("Payment failed",response);
+                // write payment failed client handle logic here
+                // console.log("Payment failed",response);
+                toast.error("Payment Failed", {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
             });
             rzp1.open();
         }
