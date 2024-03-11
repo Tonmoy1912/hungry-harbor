@@ -5,10 +5,12 @@ import Users from "@/models/user/userSchema";
 import Orders from "@/models/order/orderSchema";
 import { headers } from "next/headers";
 import { createHmac } from "crypto";
+import Razorpay from "razorpay";
 
 //always send status=ok and status code=200 to convince the razorpay server that our server is running..
 
 export async function POST(request) {
+    let db_session = null;
     try {
         // console.log("payment captured api called");
         const razorpaySignature = headers().get('x-razorpay-signature');
@@ -29,18 +31,60 @@ export async function POST(request) {
         // console.log("payment id:", payment_id);
         // console.log("order id:", order_id);
         await mongoose.connect(process.env.MONGO_URL);
-        const orderData = await Orders.findOne({ orderId: order_id, paid:false }).select({ items: 0 });
-        if(!orderData){
+
+        //first mark the order as paid
+        await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true } });
+
+        db_session = await mongoose.startSession();
+        db_session.startTransaction();
+
+        const orderData = await Orders.findOne({ orderId: order_id }).session(db_session);
+        if (!orderData) {
+            return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
+        }
+        const items = orderData.items;
+        let in_stock = true;
+        for (let x of items) {
+            let dbItem = await Items.findById(x.item).select({ in_stock: 1, price: 1 }).session(db_session);
+            if (!dbItem || dbItem.in_stock < x.quantity) {
+                //issue refund....
+                in_stock = false;
+                break;
+            }
+            else {
+                dbItem.in_stock -= x.quantity;
+                await dbItem.save();
+            }
+        }
+        if (!in_stock) {
+            //abort transaction and issue refund since the order can not be fullfilled due to out of stock items
+            await db_session.abortTransaction();
+            db_session = null;
+            let instance = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_SECRET });
+            await instance.payments.refund(payment_id, {
+                "amount": orderData.total_amount*100,
+                "speed": "normal",
+                "receipt": orderData._id
+            });
             return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
         }
         orderData.paymentId = payment_id;
         orderData.paid = true;
         orderData.payment_failed = false;
         await orderData.save();
+        await db_session.commitTransaction();
+        db_session = null;
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
     }
     catch (err) {
-        // console.log(err);
-        return NextResponse.json({ ok: false, message: err.message, type: "Failed", status: "ok" }, { status: 200 });
+        // console.log("error in payment capture", err);
+        try {
+            if (db_session) {
+                db_session.abortTransaction();
+            }
+        }
+        finally {
+            return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
+        }
     }
 }

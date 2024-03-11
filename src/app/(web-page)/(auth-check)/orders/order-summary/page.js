@@ -104,7 +104,7 @@ export function PricingSummary() {
                 }
                 return;
             }
-            //create the payment checkout
+            //all ok, create the payment checkout
             let options = {
                 "key": res.key, // Enter the Key ID generated from the Dashboard
                 "amount": res.order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise

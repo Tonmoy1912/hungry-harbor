@@ -37,8 +37,8 @@ export async function POST(request) {
             else {
                 //logic to create order document
                 total_amount += dbItem.price * x.quantity;
-                dbItem.in_stock-=x.quantity;
-                await dbItem.save();
+                // dbItem.in_stock-=x.quantity;
+                // await dbItem.save();
                 orderData.items.push({item:dbItem._id,quantity:x.quantity});
             }
         }

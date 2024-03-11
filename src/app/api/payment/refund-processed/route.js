@@ -24,30 +24,23 @@ export async function POST(request) {
         //the request is made from Razorpay..
         //Now write the backend logic
         const {id:payment_id, order_id}=body.payload.payment.entity;
+        const {id:refund_id}=body.payload.refund.entity;
         // console.log("payment id:",payment_id);
         // console.log("order id:",order_id);
         await mongoose.connect(process.env.MONGO_URL);
         db_session=await mongoose.startSession();
         db_session.startTransaction();
-        const orderData = await Orders.findOne({ orderId: order_id, paid:false, payment_failed:false }).select({items:0}).session(db_session);
+        const orderData = await Orders.findOne({ orderId: order_id }).select({items:0}).session(db_session);
         // console.log("orderData",orderData);
         if(!orderData){
             await db_session.abortTransaction();
             return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
         }
-        // const items=orderData.items;
-        //add the ordered items back to stock
-        // for(let x of items){
-        //     let dbItem = await Items.findById(x.item._id).select({ in_stock: 1 }).session(db_session);
-        //     if(dbItem){
-        //         dbItem.in_stock+=x.quantity;
-        //         await dbItem.save();
-        //     }
-        // }
-        // await Orders.deleteOne({orderId:order_id});
         orderData.paymentId = payment_id;
-        orderData.paid = false;
-        orderData.payment_failed = true;
+        orderData.paid = true;
+        orderData.payment_failed = false;
+        orderData.refundId=refund_id;
+        orderData.refunded=true;
         await orderData.save();
         await db_session.commitTransaction();
         db_session=null;

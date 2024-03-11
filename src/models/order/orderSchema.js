@@ -20,6 +20,10 @@ const orderSchema = new mongoose.Schema({
         type: String,
         default: null
     },
+    refundId:{
+        type: String,
+        default: null
+    },
     date: {
         type: Date,
         default: Date.now
@@ -34,6 +38,10 @@ const orderSchema = new mongoose.Schema({
         default: false
     },
     payment_failed: {
+        type: Boolean,
+        default: false
+    },
+    refunded:{
         type: Boolean,
         default: false
     },
