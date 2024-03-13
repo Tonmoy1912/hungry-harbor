@@ -281,7 +281,7 @@ export function WishlistItemCart({ item }) {
                 </div>
                 <div className=" w-full flex justify-between items-center">
                     <h1 className="text-xl font-bold ">{item.name}</h1>
-                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-xs font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.total_review != 0 ? item.rating : "Unrated"}</span> <IoStarSharp />  </button>
+                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-xs font-semibold flex gap-1 items-center ' disabled={true}>  <span>{item.total_review != 0 ? item.rating.toPrecision(2) : "Unrated"}</span> <IoStarSharp />  </button>
                 </div>
                 <div className=" w-full flex justify-between items-center">
                     <div className="flex flex-col gap-2 items-start">

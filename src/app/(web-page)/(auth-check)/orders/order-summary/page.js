@@ -113,11 +113,6 @@ export function PricingSummary() {
                 "description": "Test Transaction",
                 "order_id": res.order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
                 "handler": function (response) {
-                    // alert(response.razorpay_payment_id);
-                    // alert(response.razorpay_order_id);
-                    // alert(response.razorpay_signature)
-                    //write payment success client handle logic here
-                    // console.log("Payment success",response);
                     toast.success("Payment successfull.", {
                         position: "top-center",
                         autoClose: 3000,
@@ -135,21 +130,39 @@ export function PricingSummary() {
                     "email": res.user.email,
                     "contact": res.user.phone //Provide the customer's phone number for better conversion rates 
                 },
+                config: {
+                    display: {
+                        blocks: {
+                            banks: {
+                                name: 'All payment methods',
+                                instruments: [
+                                    {
+                                        method: 'upi'
+                                    },
+                                    {
+                                        method: 'card'
+                                    },
+                                    {
+                                        method: 'wallet'
+                                    },
+                                    {
+                                        method: 'netbanking'
+                                    }
+                                ],
+                            }
+                        },
+                        sequence: ['block.banks'],
+                        preferences: {
+                            show_default_blocks: false,
+                        }
+                    },
+                },
                 "theme": {
                     "color": "#3399cc"
                 }
             };
             let rzp1 = new window.Razorpay(options);
             rzp1.on('payment.failed', function (response) {
-                // alert(response.error.code);
-                // alert(response.error.description);
-                // alert(response.error.source);
-                // alert(response.error.step);
-                // alert(response.error.reason);
-                // alert(response.error.metadata.order_id);
-                // alert(response.error.metadata.payment_id);
-                // write payment failed client handle logic here
-                // console.log("Payment failed",response);
                 toast.error("Payment Failed", {
                     position: "top-center",
                     autoClose: 3000,
@@ -190,7 +203,7 @@ export function PricingSummary() {
                 <span>Out of stock</span>
                 <span> {cart_summary.out_of_stock} </span>
             </div>
-            <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `} disabled={isDisabled} onClick={e=>{e.stopPropagation();makePaymentHandler();}} >
+            <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `} disabled={isDisabled} onClick={e => { e.stopPropagation(); makePaymentHandler(); }} >
                 {
                     processing ? (
                         <span className="animate-pulse">Processing...</span>

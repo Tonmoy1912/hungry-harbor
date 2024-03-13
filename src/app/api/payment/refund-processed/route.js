@@ -11,7 +11,7 @@ import { createHmac } from "crypto";
 export async function POST(request) {
     let db_session = null;
     try {
-        // console.log("payment failed api called");
+        // console.log("payment refund-processed api called");
         const razorpaySignature = headers().get('x-razorpay-signature');
         const body=await request.json();
         const shasum = createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET);
@@ -47,7 +47,7 @@ export async function POST(request) {
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
     }
     catch (err) {
-        // console.log(err);
+        // console.log("error in refund processed",err);
         try{
             if(db_session){
                 db_session.abortTransaction();

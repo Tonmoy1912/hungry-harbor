@@ -199,7 +199,7 @@ export function CartItem({ data, setItems }) {
                 <div className='w-full md:w-2/3 md:h-full p-1.5 flex flex-col justify-start gap-1.5 items-start pl-4'>
                     <h1 className='text-xl text-black font-bold'>{data.item.name}</h1>
                     <button className='px-1.5 py-0.5 rounded-lg bg-cyan-600 text-white text-xs font-semibold' disabled={true}>{data.item.category}</button>
-                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-xs font-semibold flex gap-1 items-center ' disabled={true}>  <span>{data.item.total_review != 0 ? data.item.rating : "Unrated"}</span> <IoStarSharp />  </button>
+                    <button className='px-1.5 py-0.5 rounded-lg bg-green-600 text-white text-xs font-semibold flex gap-1 items-center ' disabled={true}>  <span>{data.item.total_review != 0 ? data.item.rating.toPrecision(2) : "Unrated"}</span> <IoStarSharp />  </button>
                     <button className='px-1.5  rounded-lg  text-black text-xs font-bold flex gap-1 items-center ' disabled={true}> <FaRupeeSign className='scale-125' />  <span className='text-lg'>{price}</span></button>
                     <div className='px-1.5 py-0.5 rounded-lg  text-black text-xs font-semibold flex flex-col items-start md:flex-row gap-1 md:items-center ' > <span> In Stock: {data.item.in_stock != 0 ? (data.item.in_stock) : (
                         <button className='px-1.5 py-0.5 rounded-lg bg-red-600 text-white text-xs font-semibold' disabled={true}>Out of Stock </button>

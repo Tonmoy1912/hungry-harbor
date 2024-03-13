@@ -54,7 +54,7 @@ export async function POST(request) {
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
     }
     catch (err) {
-        // console.log(err);
+        // console.log("error in payment failed",err);
         try{
             if(db_session){
                 db_session.abortTransaction();
