@@ -1,2 +1,4 @@
-let a=5;
-console.log(a.toPrecision(3));
+const jwt=require('jsonwebtoken');
+
+const token=jwt.sign({name:"Tonmoy biswas"},"secret");
+// console.log(token);
