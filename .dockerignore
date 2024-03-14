@@ -1,0 +1,24 @@
+# git
+.git
+.gitattributes
+.gitignore
+
+## Dependency directories
+node_modules/
+
+# Common
+README.md
+CHANGELOG.md
+docker-compose.yml
+
+#next
+.next/
+
+dist/
+.env
+.env.local
+.dockerignore
+
+#project specific
+test.js
+draft.txt

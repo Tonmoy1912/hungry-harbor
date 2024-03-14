@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import WishLists from "@/models/wishList/wishLishSchema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import Items from "@/models/item/itemSchema";
 
 export async function GET(request){
     try{
