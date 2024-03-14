@@ -16,7 +16,8 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, message: "User not logged in" }, { status: 400 });
         }
         const body = await request.json();
-        const { items, cooking_instruction } = body;
+        let { items, cooking_instruction } = body;
+        cooking_instruction=!cooking_instruction?"":cooking_instruction.trim();
         let in_stock = true;
         await mongoose.connect(process.env.MONGO_URL);
         db_session=await mongoose.startSession();

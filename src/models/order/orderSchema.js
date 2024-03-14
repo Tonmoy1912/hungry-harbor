@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { itemSchema } from "../item/itemSchema";
 
 const orderSchema = new mongoose.Schema({
     items: [{
@@ -51,9 +50,27 @@ const orderSchema = new mongoose.Schema({
         default: null
     },
     cooking_instruction:{
+        type: String,
+        default:""
+    },
+    cooking_inst_status:{
+        type:String,
+        default: "pending"// pending, accepted, rejected
+    },
+    status:{
+        type:String,
+        default:"pending"// pending, accepted,  cancelled, delivered, ready
+    },
+    active:{
+        type: String,
+        default:"initialized"//initialized, active, settled
+    },
+    ready_by:{
         type: String
     }
 });
+
+//active=active and paid=false --> cash on delivery
 
 const Orders = mongoose.models.orders || mongoose.model("orders", orderSchema);
 

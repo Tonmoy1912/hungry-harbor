@@ -71,6 +71,7 @@ export async function POST(request) {
         orderData.paymentId = payment_id;
         orderData.paid = true;
         orderData.payment_failed = false;
+        orderData.active="active";
         await orderData.save();
         await db_session.commitTransaction();
         db_session = null;

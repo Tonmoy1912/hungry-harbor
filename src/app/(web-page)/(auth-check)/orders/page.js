@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { Fragment } from 'react';
+import { UserOrder } from '@/components/user-order-components/UserOrderComponents';
 
 export default function page() {
   return (
-    <div>
-      Orders page
-    </div>
+    <Fragment>
+      <UserOrder />
+    </Fragment>
   )
 }

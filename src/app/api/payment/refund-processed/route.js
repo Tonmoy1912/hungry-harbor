@@ -41,6 +41,8 @@ export async function POST(request) {
         orderData.payment_failed = false;
         orderData.refundId=refund_id;
         orderData.refunded=true;
+        orderData.active="settled";
+        orderData.status="cancelled";
         await orderData.save();
         await db_session.commitTransaction();
         db_session=null;

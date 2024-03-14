@@ -1,9 +1,10 @@
-import React from 'react'
+import React,{Fragment} from 'react';
+import { AdminOrder } from '@/components/user-order-components/AdminOrderComponents';
 
 export default function page() {
   return (
-    <div>
-      Control panel orders page
-    </div>
+    <Fragment>
+      <AdminOrder />
+    </Fragment>
   )
 }

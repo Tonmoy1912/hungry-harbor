@@ -33,7 +33,7 @@ export default async function RootLayout({ children }) {
           </RecoilState>
         </SessionProvider>
         <ToastProvider />
-        <SocketComponent />
+        {/* <SocketComponent /> */}
       </body>
     </html>
   );
