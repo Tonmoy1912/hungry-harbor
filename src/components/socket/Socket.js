@@ -7,11 +7,11 @@ export default function SocketComponent() {
     const socket = io("http://localhost:8000/");
 
     socket.on("connect", () => {
-        console.log(`Socket connect established with server with socket id ${socket.id} .`); // x8WIv7-mJelg7on_ALbx
+        // console.log(`Socket connect established with server with socket id ${socket.id} .`); // x8WIv7-mJelg7on_ALbx
     });
 
     socket.on("disconnect", () => {
-        console.log(`Socket with id ${socket.id} get disconnected.`); // undefined
+        // console.log(`Socket with id ${socket.id} get disconnected.`); // undefined
     });
 
     socket.on("send-token", function () {

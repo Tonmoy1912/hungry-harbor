@@ -16,14 +16,14 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, message: "User not logged in" }, { status: 400 });
         }
         const body = await request.json();
-        const { items } = body;
+        const { items, cooking_instruction } = body;
         let in_stock = true;
         await mongoose.connect(process.env.MONGO_URL);
         db_session=await mongoose.startSession();
         db_session.startTransaction();
         let message = "Only";
         let total_amount = 0;
-        const orderData=new Orders({user:session.user.id,total_amount:0});
+        const orderData=new Orders({user:session.user.id,total_amount:0,cooking_instruction:cooking_instruction});
         for (let x of items) {
             let dbItem = await Items.findById(x.item._id).select({ in_stock: 1, price:1 }).session(db_session);
             if (!dbItem) {

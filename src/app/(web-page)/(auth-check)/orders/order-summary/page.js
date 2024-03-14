@@ -19,7 +19,7 @@ export default function page() {
 
     useEffect(() => {
         setProgress(false);
-        console.log("cartItems from order-summary page", cartItems);
+        // console.log("cartItems from order-summary page", cartItems);
     }, []);
     return (
         <div className='p-2'>
@@ -70,6 +70,7 @@ export function PricingSummary() {
     const cartsItems = useRecoilValue(cartItemsAtom);
     const [processing, setProcessing] = useState(false);
     const [isDisabled, setIsDisabled] = useState(true);
+    const [cooking_instruction, setCookingInstruction] = useState("");
     const setNoti = useSetRecoilState(notiAtom);
 
     async function makePaymentHandler() {
@@ -81,7 +82,7 @@ export function PricingSummary() {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ items: cartsItems })
+                body: JSON.stringify({ items: cartsItems, cooking_instruction })
             });
             res = await res.json();
             setProcessing(false);
@@ -194,25 +195,33 @@ export function PricingSummary() {
     }
 
     return (
-        <div className="sticky bottom-2 p-1  bg-slate-200  flex flex-col gap-2 shadow-sm shadow-slate-600">
-            <div className=" flex justify-between items-center ">
-                <span>Price ( {cart_summary.total_item} Items )</span>
-                <span className="flex gap-1 items-center text-lg font-bold"><FaRupeeSign /> {cart_summary.total_price} </span>
+        <Fragment>
+            <div className="sticky bottom-2 p-1  bg-slate-200  flex flex-col gap-2 shadow-sm shadow-slate-600">
+                <div className='p-2 '>
+                    <textarea name="" id="" cols="30" rows="4" className='rounded-md border border-blue-900 h-full w-full' placeholder='Any the cooking instruction'
+                        value={cooking_instruction}
+                        onChange={e => { e.stopPropagation(), setCookingInstruction(e.target.value);}}
+                    ></textarea>
+                </div>
+                <div className=" flex justify-between items-center ">
+                    <span>Price ( {cart_summary.total_item} Items )</span>
+                    <span className="flex gap-1 items-center text-lg font-bold"><FaRupeeSign /> {cart_summary.total_price} </span>
+                </div>
+                <div className=" flex justify-between items-center">
+                    <span>Out of stock</span>
+                    <span> {cart_summary.out_of_stock} </span>
+                </div>
+                <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `} disabled={isDisabled} onClick={e => { e.stopPropagation(); makePaymentHandler(); }} >
+                    {
+                        processing ? (
+                            <span className="animate-pulse">Processing...</span>
+                        ) : (
+                            <span>Make Payment</span>
+                        )
+                    }
+                </button>
+                <Script src="https://checkout.razorpay.com/v1/checkout.js" onReady={() => { setIsDisabled(false) }} />
             </div>
-            <div className=" flex justify-between items-center">
-                <span>Out of stock</span>
-                <span> {cart_summary.out_of_stock} </span>
-            </div>
-            <button className={`px-2 py-1 rounded-sm bg-blue-700 hover:bg-blue-600 text-white font-bold `} disabled={isDisabled} onClick={e => { e.stopPropagation(); makePaymentHandler(); }} >
-                {
-                    processing ? (
-                        <span className="animate-pulse">Processing...</span>
-                    ) : (
-                        <span>Make Payment</span>
-                    )
-                }
-            </button>
-            <Script src="https://checkout.razorpay.com/v1/checkout.js" onReady={() => { setIsDisabled(false) }} />
-        </div>
+        </Fragment>
     )
 }

@@ -1,4 +1,1 @@
-const jwt=require('jsonwebtoken');
-
-const token=jwt.sign({name:"Tonmoy biswas"},"secret");
-// console.log(token);
+[1,2,3,4].forEach((x)=>console.log(x));
