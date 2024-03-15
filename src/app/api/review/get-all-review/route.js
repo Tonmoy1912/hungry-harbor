@@ -13,7 +13,7 @@ export async function POST(request) {
         const session = await getServerSession(authOptions);
         const bodySchema = z.object({
             itemId: z.string().trim().min(1),
-            page_no: z.coerce.number().int(),
+            page_no: z.coerce.number().int().nonnegative(),
             row_per_page: z.coerce.number().int().positive()
         });
         const parsedData = bodySchema.safeParse(body);

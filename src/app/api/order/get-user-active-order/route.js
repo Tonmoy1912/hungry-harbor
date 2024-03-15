@@ -15,7 +15,7 @@ export async function GET(request){
         const userId=session.user.id;
         await mongoose.connect(process.env.MONGO_URL);
         const orders=await Orders.find({user:userId,active:"active"}).select({
-            active:0,user:0,refunded:0,payment_failed:0,date:0,refundId:0,cooking_instruction:0
+            active:0,user:0,refunded:0,payment_failed:0,refundId:0,cooking_instruction:0
         })
         .populate({
             path:"items.item",

@@ -19,12 +19,13 @@ export async function POST(request) {
             status: 1,
             active: 1,
             paymentId: 1,
-            total_amount: 1
+            total_amount: 1,
+            refunded: 1
         });
         if (!order) {
             return NextResponse.json({ ok: false, message: "Order doesn't exist" }, { status: 400 });
         }
-        else if(order.status=="settled"){
+        else if (order.status == "settled") {
             return NextResponse.json({ ok: false, message: "Settled ordered can't be refunded" }, { status: 400 });
         }
         order.status = "cancelled";
@@ -36,6 +37,10 @@ export async function POST(request) {
                 "speed": "normal",
                 "receipt": order._id
             });
+        }
+        else {
+            //no payment id -> cash on delivery
+            order.refunded = true;
         }
         await order.save();
         return NextResponse.json({ ok: true, message: "Order cancelled successfully" }, { status: 200 });

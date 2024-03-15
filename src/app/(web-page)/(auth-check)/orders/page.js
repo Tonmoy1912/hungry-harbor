@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-import { UserOrder } from '@/components/user-order-components/UserOrderComponents';
+import { UserOrder } from '@/components/order-components/UserOrderComponents';
 
 export default function page() {
   return (

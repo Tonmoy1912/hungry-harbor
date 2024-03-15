@@ -1,1 +1,2 @@
-[1,2,3,4].forEach((x)=>console.log(x));
+const curDate=new Date();
+console.log(curDate.toLocaleString());

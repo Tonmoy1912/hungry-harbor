@@ -24,7 +24,8 @@ export async function POST(request){
             cooking_inst_status:1,
             ready_by:1,
             paymentId:1,
-            total_amount:1
+            total_amount:1,
+            refunded:1
         });
         if(!order){
             return NextResponse.json({ok:false,message:"Order doesn't exist"},{status:400});
@@ -47,6 +48,10 @@ export async function POST(request){
                     "speed": "normal",
                     "receipt": order._id
                 });
+            }
+            else{
+                //no payment id -> cash on delivery
+                order.refunded=true;
             }
         }
         await order.save();

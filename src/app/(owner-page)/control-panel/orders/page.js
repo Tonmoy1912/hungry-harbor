@@ -1,5 +1,5 @@
 import React,{Fragment} from 'react';
-import { AdminOrder } from '@/components/user-order-components/AdminOrderComponents';
+import { AdminOrder } from '@/components/order-components/AdminOrderComponents';
 
 export default function page() {
   return (

@@ -42,7 +42,7 @@ export function BootstrapReviewWindow() {
     }
 
     useEffect(() => {
-        if (pageNo >= 10) {
+        if (pageNo >= 30) {
             setHasNext(false);
         }
     }, [pageNo]);
