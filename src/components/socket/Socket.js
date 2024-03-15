@@ -160,6 +160,50 @@ export default function SocketComponent() {
             });
         });
 
+        //new order added for admin
+        socket.on("newOrder",function(data){
+            toast.success("A new order received", {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
+            fetch(`/api/order/get-order-by-id`, {
+                cache: "no-store",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({_id:data._id})
+            })
+            .then(res=>res.json())
+            .then(res=>{
+                if(res.ok){
+                    setAdminActiveOrders(prev=>{
+                        return [{...res.order},...prev];
+                    });
+                }
+            })
+            .catch(err=>{
+                toast.success(err.message, {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            });
+        });
+
         return () => {
             socket.disconnect();
         }

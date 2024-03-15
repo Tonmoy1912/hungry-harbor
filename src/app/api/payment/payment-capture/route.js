@@ -75,6 +75,15 @@ export async function POST(request) {
         await orderData.save();
         await db_session.commitTransaction();
         db_session = null;
+        fetch(`${process.env.SS_HOST}/api/order/new-order`, {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Pass-Code": process.env.PASS_CODE
+            },
+            body: JSON.stringify({_id:orderData._id})
+        });
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
     }
     catch (err) {
