@@ -32,20 +32,31 @@ export async function POST(request) {
         order.active = "settled";
         if (order.paymentId) {
             let instance = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_SECRET });
-            await instance.payments.refund(order.paymentId, {
+            let refund_status=await instance.payments.refund(order.paymentId, {
                 "amount": order.total_amount * 100,
                 "speed": "normal",
                 "receipt": order._id
             });
+            // console.log("refund status",refund_status);
         }
         else {
             //no payment id -> cash on delivery
             order.refunded = true;
         }
         await order.save();
+        fetch(`${process.env.SS_HOST}/api/order/user-cancel-order`, {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Pass-Code": process.env.PASS_CODE
+            },
+            body: JSON.stringify({ _id: order._id, status: order.status, active: order.active, userId: order.user,refunded:order.refunded  })
+        });
         return NextResponse.json({ ok: true, message: "Order cancelled successfully" }, { status: 200 });
     }
     catch (err) {
+        // console.log(err);
         return NextResponse.json({ ok: false, message: err.message }, { status: 500 });
     }
 }

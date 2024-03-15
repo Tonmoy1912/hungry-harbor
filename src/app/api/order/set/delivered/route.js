@@ -24,6 +24,15 @@ export async function POST(request){
         order.status="delivered";
         order.active="settled";
         await order.save();
+        fetch(`${process.env.SS_HOST}/api/order/delivered`, {
+            cache: "no-store",
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Pass-Code": process.env.PASS_CODE
+            },
+            body: JSON.stringify({ _id: order._id, status: order.status, active: order.active, userId: order.user })
+        });
         return NextResponse.json({ok:true,message:"Order mark as delivered"},{status:200});
     }
     catch(err){

@@ -72,6 +72,11 @@ const orderSchema = new mongoose.Schema({
 
 //active=active and paid=false --> cash on delivery
 
+//active attribute
+//when order is created active=initialized, when user paid for the order online it's active=active
+//but in case of cash of delivery active=active by default
+// when the order is either delivered or cancelled active=settled 
+
 const Orders = mongoose.models.orders || mongoose.model("orders", orderSchema);
 
 export default Orders;

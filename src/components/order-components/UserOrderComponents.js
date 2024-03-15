@@ -86,7 +86,7 @@ function CurOrder() {
                     <div className='p-1 w-full text-center text-xl font-bold text-blue-950 '>No active orders</div>
                 ) : (
                     activeOrders.map(order => {
-                        return <ActiveOrder order={order} key={order._id} />
+                        return <ActiveOrder order={order} key={order._id} setActiveOrders={setActiveOrders} />
                     })
                 )
             }
@@ -95,7 +95,7 @@ function CurOrder() {
 }
 
 
-function ActiveOrder({ order }) {
+function ActiveOrder({ order, setActiveOrders }) {
     const [show, setShow] = useState(false);
     const setPregress = useSetRecoilState(progressAtom);
 
@@ -125,6 +125,9 @@ function ActiveOrder({ order }) {
                         theme: "colored",
                         transition: Bounce,
                     });
+                    setActiveOrders(prev => {
+                        return prev.filter(x => x._id != order._id);
+                    })
                 }
                 else {
                     toast.error(res.message, {
@@ -353,7 +356,7 @@ function PrevOrderBox({ index, style, parent, orders, cache }) {
             {
                 index < orders.length ? (
                     <div style={style} className='p-0.5 bg-slate-100 w-full border-2 border-slate-600 rounded-sm flex flex-col gap-1 justify-start md:flex-row'>
-                        <div className='p-0.5 flex flex-col gap-0.5 flex-wrap justify-start items-start md:w-1/2'>
+                        <div className='p-0.5 flex flex-col gap-0.5 justify-start items-start md:w-1/2'>
                             {
                                 order.items.map(data => {
                                     return (

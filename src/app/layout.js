@@ -27,13 +27,13 @@ export default async function RootLayout({ children }) {
           <RecoilState>
             <QueryProvider>
               {children}
-              <Notification/>
-              <ProgressBar/>
+              <Notification />
+              <ProgressBar />
             </QueryProvider>
+            <SocketComponent />
           </RecoilState>
         </SessionProvider>
         <ToastProvider />
-        {/* <SocketComponent /> */}
       </body>
     </html>
   );

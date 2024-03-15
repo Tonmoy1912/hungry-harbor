@@ -12,6 +12,7 @@ import Image from "next/image";
 import Script from 'next/script';
 import { toast, Slide, Bounce } from 'react-toastify';
 import { notiAtom } from '@/store/notiState';
+import { useRouter } from 'next/navigation';
 
 export default function page() {
     const setProgress = useSetRecoilState(progressAtom);
@@ -72,6 +73,7 @@ export function PricingSummary() {
     const [isDisabled, setIsDisabled] = useState(true);
     const [cooking_instruction, setCookingInstruction] = useState("");
     const setNoti = useSetRecoilState(notiAtom);
+    const router=useRouter()
 
     async function makePaymentHandler() {
         try {
@@ -125,6 +127,7 @@ export function PricingSummary() {
                         theme: "colored",
                         transition: Bounce,
                     });
+                    router.push("/orders");
                 },
                 "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
                     "name": res.user.name, //your customer's name
