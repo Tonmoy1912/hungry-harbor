@@ -101,7 +101,14 @@ export function NotificationsWindow() {
                                 rowHeight={cache.current.rowHeight}
                                 deferredMeasurementCache={cache.current}
                                 rowCount={hasNext ? notifications.length + 1 : notifications.length}
-                                rowRenderer={({ key, index, style, parent }) => { return <NotificationBox key={key} index={index} style={style} parent={parent} notifications={notifications} cache={cache} /> }}
+                                rowRenderer={({ key, index, style, parent }) => {
+                                    if (index < notifications.length) {
+                                        <div style={style} className=' bg-slate-50 border border-black'>
+                                            <p className='p-1 text-sm text-blue-900 font-bold animate-pulse'>Loading...</p>
+                                        </div>
+                                    }
+                                    return <NotificationBox key={key} index={index} style={style} parent={parent} notifications={notifications} cache={cache} />
+                                }}
                             >
 
                             </List>
@@ -116,32 +123,41 @@ export function NotificationsWindow() {
 
 function NotificationBox({ index, style, parent, notifications, cache }) {
     const notification = notifications[index];
-    const [isRead, setIsRead] = useState(!notification ? true : notification.is_read);
-    const setProgress=useSetRecoilState(progressAtom);
-    function markReadHandler(e){
+    // console.log("notification",notification);
+    const [isRead, setIsRead] = useState();
+    useEffect(()=>{
+        if(notification){
+            setIsRead(notification.is_read);
+        }
+        else{
+            setIsRead(false);
+        }
+    },[]);
+    const setProgress = useSetRecoilState(progressAtom);
+    function markReadHandler(e) {
         e.stopPropagation();
         setProgress(true);
-        fetch("/api/notification/mark-read",{
-            cache:"no-store",
-            method:"POST",
+        fetch("/api/notification/mark-read", {
+            cache: "no-store",
+            method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ _id:notification._id})
+            body: JSON.stringify({ _id: notification._id })
         })
-        .then(res=>res.json())
-        .then(res=>{
-            setProgress(false);
-            if(res.ok){
-                setIsRead(true);
-            }
-            else{
-                setIsRead(false);
-            }
-        })
-        .catch(err=>{
-            setProgress(false);
-        });
+            .then(res => res.json())
+            .then(res => {
+                setProgress(false);
+                if (res.ok) {
+                    setIsRead(true);
+                }
+                else {
+                    setIsRead(false);
+                }
+            })
+            .catch(err => {
+                setProgress(false);
+            });
     }
     return (
         <CellMeasurer

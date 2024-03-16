@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import Orders from "@/models/order/orderSchema";
 import Razorpay from "razorpay";
+import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 
 export async function POST(request) {
     try {
@@ -21,7 +22,11 @@ export async function POST(request) {
             paymentId: 1,
             total_amount: 1,
             refunded: 1
-        });
+        })
+        .populate({
+            path:"user",
+            select:"name phone"
+        })
         if (!order) {
             return NextResponse.json({ ok: false, message: "Order doesn't exist" }, { status: 400 });
         }
@@ -44,6 +49,17 @@ export async function POST(request) {
             order.refunded = true;
         }
         await order.save();
+        //send to owner
+        sendNotiToSocketServerAndSave({
+            message:`A user with name: ${order.user.name} and phone ${order.user.phone} has cancelled his order with receipt id : ${order._id}`,
+            is_read:false,
+            for_owner:true
+        });
+        sendNotiToSocketServerAndSave({
+            userId:order.user,
+            message:`Your order with receipt id : ${order._id} is cancelled. ${order.refunded && "The money will be refunded within 5-7 working days."}`,
+            is_read:false
+        });
         fetch(`${process.env.SS_HOST}/api/order/user-cancel-order`, {
             cache: "no-store",
             method: "POST",

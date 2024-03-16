@@ -29,8 +29,8 @@ export default async function RootLayout({ children }) {
               {children}
               <Notification />
               <ProgressBar />
+              <SocketComponent />
             </QueryProvider>
-            <SocketComponent />
           </RecoilState>
         </SessionProvider>
         <ToastProvider />

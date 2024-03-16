@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import Orders from "@/models/order/orderSchema";
 import Razorpay from "razorpay";
+import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 
 export async function POST(request) {
     try {
@@ -35,6 +36,12 @@ export async function POST(request) {
             order.active = "active";
             order.ready_by = ready_by || "";
             order.cooking_inst_status = cooking_inst_status == "accept" ? "accepted" : "rejected";
+            await order.save();
+            sendNotiToSocketServerAndSave({
+                userId:order.user,
+                message:`Your order with receipt id : ${order._id} is accepted`,
+                is_read:false
+            })
         }
         else {
             order.status = "cancelled";
@@ -53,8 +60,13 @@ export async function POST(request) {
                 //no payment id -> cash on delivery
                 order.refunded = true;
             }
+            await order.save();
+            sendNotiToSocketServerAndSave({
+                userId:order.user,
+                message:`Your order with receipt id : ${order._id} is cancelled. ${order.refunded && "The money will be refunded within 5-7 working days."}`,
+                is_read:false
+            });
         }
-        await order.save();
         fetch(`${process.env.SS_HOST}/api/order/accept-order`, {
             cache: "no-store",
             method: "POST",

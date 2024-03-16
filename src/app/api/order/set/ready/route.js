@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import Orders from "@/models/order/orderSchema";
+import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 
 export async function POST(request){
     try{
@@ -24,6 +25,11 @@ export async function POST(request){
         order.status="ready";
         order.active="active";
         await order.save();
+        sendNotiToSocketServerAndSave({
+            userId:order.user,
+            message:`Your order with receipt id: ${order._id} is ready.`,
+            is_read:false
+        });
         fetch(`${process.env.SS_HOST}/api/order/ready`, {
             cache: "no-store",
             method: "POST",

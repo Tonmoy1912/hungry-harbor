@@ -4,6 +4,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import Owners from "@/models/owner/ownerSchema";
 import Users from "@/models/user/userSchema";
+import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 
 export async function POST(request){
     try{
@@ -25,6 +26,11 @@ export async function POST(request){
         }
         const newAdmin=new Owners({user:user._id,email:email});
         await newAdmin.save();
+        sendNotiToSocketServerAndSave({
+            userId:user._id,
+            message:"You are added as admin",
+            is_read:false
+        });
         return NextResponse.json({ok:true,message:"User added successfully",type:"Success",admin:{user:user,email:email}},{status:200});
     }
     catch(err){

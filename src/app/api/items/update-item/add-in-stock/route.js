@@ -5,6 +5,7 @@ import mongoose, { mongo } from "mongoose";
 import Categories from "@/models/category/categorySchema";
 import Items from "@/models/item/itemSchema";
 import { z } from "zod";
+import { itemUpdateSync } from "@/util/item_update_sync";
 
 export async function POST(request) {
     let db_session=null;
@@ -45,7 +46,7 @@ export async function POST(request) {
         await db_session.commitTransaction();
         //put inside db transaction............................
 
-        
+        itemUpdateSync();
         return NextResponse.json({ ok: true, message: "Stocks added successfully", type: "Success" }, { status: 200 });
     }
     catch (err) {

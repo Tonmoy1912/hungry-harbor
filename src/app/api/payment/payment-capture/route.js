@@ -6,6 +6,8 @@ import Orders from "@/models/order/orderSchema";
 import { headers } from "next/headers";
 import { createHmac } from "crypto";
 import Razorpay from "razorpay";
+import { itemUpdateSync } from "@/util/item_update_sync";
+import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 
 //always send status=ok and status code=200 to convince the razorpay server that our server is running..
 
@@ -66,14 +68,21 @@ export async function POST(request) {
                 "speed": "normal",
                 "receipt": orderData._id
             });
+            sendNotiToSocketServerAndSave({
+                userId:orderData.user,
+                message:`Your order with receipt id: ${orderData._id} is cancelled. The money will be refunded within 5-7 working days.`,
+                is_read:false
+            })
             return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
         }
         orderData.paymentId = payment_id;
         orderData.paid = true;
         orderData.payment_failed = false;
         orderData.active="active";
+        orderData.status="cancelled";
         await orderData.save();
         await db_session.commitTransaction();
+        itemUpdateSync();
         db_session = null;
         fetch(`${process.env.SS_HOST}/api/order/new-order`, {
             cache: "no-store",

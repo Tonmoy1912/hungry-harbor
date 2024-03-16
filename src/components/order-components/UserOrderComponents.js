@@ -80,7 +80,7 @@ function CurOrder() {
     }
 
     return (
-        <div className='flex flex-col gap-1 justify-start items-center'>
+        <div className='flex flex-col gap-2 justify-start items-center'>
             {
                 activeOrders.length == 0 ? (
                     <div className='p-1 w-full text-center text-xl font-bold text-blue-950 '>No active orders</div>

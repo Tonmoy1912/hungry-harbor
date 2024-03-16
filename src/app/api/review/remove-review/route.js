@@ -5,6 +5,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import Reviews from "@/models/review/reviewSchema";
 import Items from "@/models/item/itemSchema";
 import { z } from 'zod';
+import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 
 export async function POST(request) {
     let db_session = null;
@@ -29,7 +30,12 @@ export async function POST(request) {
         await mongoose.connect(process.env.MONGO_URL);
         db_session = await mongoose.startSession();
         db_session.startTransaction();
-        const prevReview = await Reviews.findById(reviewId).session(db_session);
+        const prevReview = await Reviews.findById(reviewId)
+        .populate({
+            path:"item",
+            select:"name"
+        })
+        .session(db_session);
         if (prevReview.user != userId && !session.user.isAdmin) {
             await db_session.abortTransaction();
             return NextResponse.json({ ok: false, message: "Unauthorized action." }, { status: 400 });
@@ -51,6 +57,21 @@ export async function POST(request) {
         await Reviews.findByIdAndDelete(reviewId).session(db_session);
         await db_session.commitTransaction();
         db_session=null;
+        if(session.user.isAdmin && session.user.id!=prevReview.user){
+            //the owner delete some one others review
+            sendNotiToSocketServerAndSave({
+                userId:prevReview.user,
+                message:`Your review for item ${prevReview.item.name} is removed by the admin owner`,
+                is_read:false
+            });
+        }
+        // else{
+        //     sendNotiToSocketServerAndSave({
+        //         userId:prevReview.user,
+        //         message:`Your review for item ${prevReview.item.name} is removed.`,
+        //         is_read:false
+        //     });
+        // }
         return NextResponse.json({ ok: true, message: "Review deleted successfully." }, { status: 200 });
     }
     catch (err) {

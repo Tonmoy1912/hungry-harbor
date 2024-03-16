@@ -16,6 +16,10 @@ const notificationSchema = new mongoose.Schema({
     is_read:{
         type: Boolean,
         default: false
+    },
+    for_owner:{
+        type: Boolean,
+        default: false
     }
 });
 

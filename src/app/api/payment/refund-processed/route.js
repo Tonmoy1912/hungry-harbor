@@ -5,6 +5,7 @@ import Users from "@/models/user/userSchema";
 import Orders from "@/models/order/orderSchema";
 import { headers } from "next/headers";
 import { createHmac } from "crypto";
+import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 
 //always send status=ok and status code=200 to convince the razorpay server that our server is running..
 
@@ -46,6 +47,12 @@ export async function POST(request) {
         await orderData.save();
         await db_session.commitTransaction();
         db_session=null;
+        sendNotiToSocketServerAndSave({
+            userId:orderData.user,
+            message:`The payment for order with receipt id: ${orderData._id} is refunded.`,
+            is_read:false,
+            for_owner:false
+        })
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
     }
     catch (err) {
