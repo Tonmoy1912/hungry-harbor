@@ -8,6 +8,7 @@ import { IoReorderThree } from "react-icons/io5";
 import { RxCross1 } from "react-icons/rx";
 import { useSession } from 'next-auth/react';
 import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 // import ProgressBar from '../progress-bar/ProgressBar';
 import Link from 'next/link';
 
@@ -15,6 +16,7 @@ export default function TopBar() {
     const { data, status } = useSession();
     const [navState, setNavState] = useRecoilState(navAtom);
     const setSessionState = useSetRecoilState(sessionAtom);
+    const router=useRouter();
 
     useEffect(() => {
         if (status == "authenticated") {
@@ -37,7 +39,7 @@ export default function TopBar() {
                             <h1 className='flex items-center sm:hidden'><IoReorderThree className='text-white scale-150 ' onClick={() => { setNavState({ ...navState, open: true }) }} /></h1>
                         )
                     }
-                    <h1 className='text-white font-bold sm:text-2xl'> Hungry Harbor </h1>
+                    <h1 className='text-white font-bold sm:text-2xl cursor-pointer' onClick={()=>{router.push("/")}} > Hungry Harbor </h1>
                 </div>
                 <div className='px-4 flex gap-2'>
                     {
