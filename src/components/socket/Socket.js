@@ -2,12 +2,23 @@
 import React, { Fragment, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { toast, Slide, Bounce } from 'react-toastify';
-import { useSetRecoilState } from 'recoil';
+import { useSetRecoilState, useRecoilValue } from 'recoil';
+import { sessionAtom } from '@/store/sessionStore';
 import { notiAtom } from '@/store/notiState';
 import { userActiveOrderAtom, adminActiveOrderAtom } from '@/store/orderAtom';
 import { useQueryClient } from '@tanstack/react-query';
 
-export default function SocketComponent() {
+export default function SocketComponent(){
+    const session=useRecoilValue(sessionAtom);
+    if(!session){
+        return null;
+    }
+    return (
+        <SocketComponentInternal />
+    )
+}
+
+function SocketComponentInternal() {
 
     const setNoti=useSetRecoilState(notiAtom);
     const setUserActiveOrders=useSetRecoilState(userActiveOrderAtom);

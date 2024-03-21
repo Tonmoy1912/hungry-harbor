@@ -31,6 +31,9 @@ export async function POST(request) {
         if (!order) {
             return NextResponse.json({ ok: false, message: "Order doesn't exist" }, { status: 400 });
         }
+        if(order.status!='pending'){
+            return NextResponse.json({ok:false,message:"Only pending order can be accepted."},{status:400});
+        }
         if (accepted) {
             order.status = "accepted";
             order.active = "active";

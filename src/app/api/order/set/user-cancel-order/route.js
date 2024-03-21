@@ -15,7 +15,7 @@ export async function POST(request) {
         const body = await request.json();
         const _id = body._id;
         await mongoose.connect(process.env.MONGO_URL);
-        const order = await Orders.findById(_id).select({
+        const order = await Orders.findOne({_id:_id,user:session.user.id}).select({
             user: 1,
             status: 1,
             active: 1,
@@ -31,7 +31,10 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, message: "Order doesn't exist" }, { status: 400 });
         }
         else if (order.status == "settled") {
-            return NextResponse.json({ ok: false, message: "Settled ordered can't be refunded" }, { status: 400 });
+            return NextResponse.json({ ok: false, message: "Settled ordered can't be cancelled." }, { status: 400 });
+        }
+        else if(order.status != "pending"){
+            return NextResponse.json({ ok: false, message: "Only pending orders can be cancelled." }, { status: 400 });
         }
         order.status = "cancelled";
         order.active = "settled";

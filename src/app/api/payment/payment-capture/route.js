@@ -35,7 +35,7 @@ export async function POST(request) {
         await mongoose.connect(process.env.MONGO_URL);
 
         //first mark the order as paid
-        await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true } });
+        await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true,active:"settled",status:"cancelled" } });
 
         db_session = await mongoose.startSession();
         db_session.startTransaction();
@@ -79,7 +79,7 @@ export async function POST(request) {
         orderData.paid = true;
         orderData.payment_failed = false;
         orderData.active="active";
-        orderData.status="cancelled";
+        orderData.status="pending";
         await orderData.save();
         await db_session.commitTransaction();
         itemUpdateSync();

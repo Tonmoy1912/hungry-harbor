@@ -22,6 +22,9 @@ export async function POST(request){
         if(!order){
             return NextResponse.json({ok:false,message:"Order doesn't exist"},{status:400});
         }
+        if(order.active=='settled'){
+            return NextResponse.json({ok:false,message:"A delivered or cancelled order can't be delivered again."},{status:400});
+        }
         order.status="delivered";
         order.active="settled";
         await order.save();

@@ -9,12 +9,12 @@ import mongoose from "mongoose";
 export async function POST(request){
     try{
         const session=await getServerSession(authOptions);
-        if(!session || !session.user.isAdmin){
+        if(!session){
             return NextResponse.json({ok:false,message:"You are not authorized."},{status:400});
         }
         const body=await request.json();
         await mongoose.connect(process.env.MONGO_URL);
-        const order=await Orders.findById(body._id).select({
+        const order=await Orders.findOne({_id:body._id,user:session.user.id}).select({
             refunded:0,payment_failed:0,refundId:0,
         })
         .populate({

@@ -217,7 +217,7 @@ function ActiveOrder({ order, setActiveOrders }) {
                     {order.cooking_inst_status == 'accepted' &&
                         (
                             <div>
-                                <span className='font-semibold'> Cooding instruction :</span> <button className={`${order.cooking_inst_status == 'rejected' ? "bg-red-600" : "bg-green-600"} py-0.5 px-1 rounded-md font-semibold text-white text-xs`} disabled={true} > {order.cooking_inst_status} </button>
+                                <span className='font-semibold'> Cooking instruction :</span> <button className={`${order.cooking_inst_status == 'rejected' ? "bg-red-600" : "bg-green-600"} py-0.5 px-1 rounded-md font-semibold text-white text-xs`} disabled={true} > {order.cooking_inst_status} </button>
                             </div>
                         )
                     }
@@ -227,7 +227,10 @@ function ActiveOrder({ order, setActiveOrders }) {
                         <span className='font-semibold text-blue-800'>{new Date(order.date).toLocaleString()}</span>
                     </div>
                     {order.status == 'accepted' && <p className='text-green-800'>Will be ready in {order.ready_by} mins</p>}
-                    <button className='px-1 py-0.5 bg-red-600 hover:bg-red-500 rounded-md text-white text-xs' onClick={e => { setShow(true) }} >Cancel Order</button>
+                    {
+                        order.status == 'pending' && 
+                        <button className='px-1 py-0.5 bg-red-600 hover:bg-red-500 rounded-md text-white text-xs' onClick={e => { setShow(true) }} >Cancel Order</button>
+                    }
                 </div>
             </div>
             <ConfirmBox show={show} onYes={cancelOrdderHandler} onCancel={cancelHandler} text={"Cancel the order"} />
@@ -255,7 +258,7 @@ function PrevOrder() {
     function isRowLoaded({ index }) {
         return !hasNext || index < orders.length;
     }
-
+ 
     function fetchMorePage({ startIndex, stopIndex }) {
         setIsLoadingNextPage(true);
         fetch(`/api/order/get-user-prev-order`, {
