@@ -170,7 +170,7 @@ function ActiveOrder({ order, setActiveOrders }) {
                     {
                         order.items.map(data => {
                             return (
-                                <div className='h-32 w-full flex items-center bg-slate-200 shadow-sm shadow-slate-500'>
+                                <div className='h-32 w-full flex items-center bg-slate-200 shadow-sm shadow-slate-500' key={data.item._id} >
                                     <Image className='h-full w-1/2' src={data.item.image} height={200} width={200} alt={`${data.item.name}-image`} ></Image>
                                     <div className='p-1 flex flex-col justify-start h-full'>
                                         <h1 className=' font-semibold text-lg'>{data.item.name} </h1>

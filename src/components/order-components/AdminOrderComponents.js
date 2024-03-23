@@ -380,7 +380,7 @@ function ActiveOrder({ order, setConfirmBoxObject, setActiveOrders }) {
                     {
                         order.items.map(data => {
                             return (
-                                <div className='h-32 w-1/2 p-0.5 flex items-center  '>
+                                <div className='h-32 w-1/2 p-0.5 flex items-center' key={data.item._id} >
                                     <div className='p-0.5 flex flex-col justify-start h-full w-full bg-slate-200 shadow-sm shadow-slate-500'>
                                         <h1 className=' font-semibold text-lg'>{data.item.name} </h1>
                                         <span className='text-sm'>Quantity: {data.quantity}</span>

@@ -132,7 +132,7 @@ function NotificationBox({ index, style, parent, notifications, cache }) {
         else{
             setIsRead(false);
         }
-    },[]);
+    },[notification]);
     const setProgress = useSetRecoilState(progressAtom);
     function markReadHandler(e) {
         e.stopPropagation();

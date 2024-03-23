@@ -17,6 +17,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast, Slide, Bounce } from "react-toastify";
 import { progressAtom } from "@/store/progressAtom";
 import { useRouter } from "next/navigation";
+import { motion } from 'framer-motion';
 
 let item_obj = {
     _id: "65d231a92a0184bdff61f9f5",
@@ -374,14 +375,29 @@ export function ItemCart({ item }) {
             },
             body: JSON.stringify({ item_id, toBuy: true })
         }).then(res => res.json())
-        .then(res=>{
-            setBuyProcessing(false);
-            if(res.ok){
-                setProgress(true);
-                router.push("/cart");
-            }
-            else{
-                toast.error(res.message, {
+            .then(res => {
+                setBuyProcessing(false);
+                if (res.ok) {
+                    setProgress(true);
+                    router.push("/cart");
+                }
+                else {
+                    toast.error(res.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
+                    });
+                }
+            })
+            .catch(err => {
+                setBuyProcessing(false);
+                toast.error(err.message, {
                     position: "top-center",
                     autoClose: 3000,
                     hideProgressBar: false,
@@ -392,27 +408,29 @@ export function ItemCart({ item }) {
                     theme: "colored",
                     transition: Bounce,
                 });
-            }
-        })
-        .catch(err=>{
-            setBuyProcessing(false);
-            toast.error(err.message, {
-                position: "top-center",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                transition: Bounce,
-            });
-        })
+            })
     }
 
     return (
         <Fragment>
-            <div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300 cursor-pointer" onClick={() => { setProgress(true); router.push(`/items/${item._id}`); }}>
+            <motion.div className="border border-blue-900 p-2 min-h-72 w-96 flex flex-col gap-2 items-start bg-slate-200 rounded-md shadow-md shadow-slate-700 hover:scale-105  ease-in duration-300 cursor-pointer" onClick={() => { setProgress(true); router.push(`/items/${item._id}`); }}
+                initial={{
+                    scale: 0.8,
+                    opacity: 0
+                }}
+                whileInView={{
+                    scale: 1,
+                    opacity: 1,
+                }}
+                viewport={{
+                    once: true
+                }}
+                transition={{
+                    duration: 0.1,
+                    // ease: [0, 0.71, 0.2, 1.01]
+                    ease:"easeInOut"
+                }}
+            >
                 <div className="w-full h-52  ">
                     <Image src={item.image} alt={`${item.name}-image`} height={400} width={400} className="h-full w-full rounded-md" />
                 </div>
@@ -448,7 +466,7 @@ export function ItemCart({ item }) {
                         )
                     }
 
-                    
+
                     {
                         processing ? (
                             <button className="py-1 px-2 rounded-md bg-blue-700 animate-pulse">Processing...</button>
@@ -457,7 +475,7 @@ export function ItemCart({ item }) {
                         )
                     }
                 </div>
-            </div>
+            </motion.div>
         </Fragment>
     )
 }
