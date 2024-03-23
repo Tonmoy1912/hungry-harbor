@@ -6,6 +6,7 @@ import Orders from "@/models/order/orderSchema";
 import { headers } from "next/headers";
 import { createHmac } from "crypto";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { mongoConnect } from "@/config/moongose";
 
 //always send status=ok and status code=200 to convince the razorpay server that our server is running..
 
@@ -28,7 +29,8 @@ export async function POST(request) {
         const {id:refund_id}=body.payload.refund.entity;
         // console.log("payment id:",payment_id);
         // console.log("order id:",order_id);
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         db_session=await mongoose.startSession();
         db_session.startTransaction();
         const orderData = await Orders.findOne({ orderId: order_id }).select({items:0}).session(db_session);

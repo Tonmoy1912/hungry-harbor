@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import { cookies } from "next/headers";
 import transporter from "@/config/nodemailer-config";
 import bcrypt from "bcrypt";
+import { mongoConnect } from "@/config/moongose";
 
 // Function to generate a random 6-digit number
 function generateRandomNumber() {
@@ -19,7 +20,8 @@ export async function POST(request) {
         if(body.email==""){
             return NextResponse.json({ok:false,message:"Enter valid input"},{status:400});
         }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const user = await Users.findOne({ email: body.email }).select({ email: 1 });
         if (!user) {
             return NextResponse.json({ ok: false, message: "No user with the given email" }, { status: 400 });

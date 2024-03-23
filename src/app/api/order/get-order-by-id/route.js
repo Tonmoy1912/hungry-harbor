@@ -5,6 +5,7 @@ import Orders from "@/models/order/orderSchema";
 import Items from "@/models/item/itemSchema";
 import Users from "@/models/user/userSchema";
 import mongoose from "mongoose";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -13,7 +14,8 @@ export async function POST(request){
             return NextResponse.json({ok:false,message:"You are not authorized."},{status:400});
         }
         const body=await request.json();
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const order=await Orders.findOne({_id:body._id,user:session.user.id}).select({
             refunded:0,payment_failed:0,refundId:0,
         })

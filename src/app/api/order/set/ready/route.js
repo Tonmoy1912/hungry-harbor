@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import Orders from "@/models/order/orderSchema";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -13,7 +14,8 @@ export async function POST(request){
         }
         const body=await request.json();
         const _id=body._id;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const order=await Orders.findById(_id).select({
             user:1,
             status:1,

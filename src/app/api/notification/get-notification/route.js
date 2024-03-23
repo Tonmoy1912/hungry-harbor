@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import Notifications from "@/models/notification/notificationSchema";
 import {z} from 'zod';
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -22,7 +23,8 @@ export async function POST(request){
         }
         const userId=session.user.id;
         const { page_no, row_per_page } = parsedData.data;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const notifications=await Notifications.find({user:userId})
         .sort({date:-1})
         .skip(page_no*row_per_page)

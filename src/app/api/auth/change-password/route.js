@@ -4,6 +4,7 @@ import Users from "@/models/user/userSchema";
 import { authOptions } from "../[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import bcrypt from "bcrypt";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     try {
@@ -21,7 +22,8 @@ export async function POST(request) {
         if (body.new_password != body.confirm_password) {
             return NextResponse.json({ ok: false, message: "New password and confirm password did not match" },{status:400});
         }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const user = await Users.findById(session.user.id).select("password");
         const isMatched = await bcrypt.compare(body.old_password, user.password);
         if (!isMatched) {

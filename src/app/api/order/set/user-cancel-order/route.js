@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Orders from "@/models/order/orderSchema";
 import Razorpay from "razorpay";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     try {
@@ -14,7 +15,8 @@ export async function POST(request) {
         }
         const body = await request.json();
         const _id = body._id;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const order = await Orders.findOne({_id:_id,user:session.user.id}).select({
             user: 1,
             status: 1,

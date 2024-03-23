@@ -6,6 +6,7 @@ import Items from "@/models/item/itemSchema";
 import Users from "@/models/user/userSchema";
 import mongoose from "mongoose";
 import { z } from 'zod';
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -24,7 +25,8 @@ export async function POST(request){
         }
         const userId=session.user.id;
         const { page_no, row_per_page } = parsedData.data;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const orders=await Orders.find({user:userId,active:"settled"})
         .sort({date:-1})
         .skip(page_no*row_per_page)

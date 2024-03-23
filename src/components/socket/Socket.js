@@ -28,7 +28,8 @@ function SocketComponentInternal() {
     useEffect(() => {
         //generating socket server origin
         let socketOrigin = window.origin.substring(0, window.origin.lastIndexOf(":") + 1) + "8000";
-        const socket = io(socketOrigin);
+        // const socket = io(socketOrigin);
+        const socket = io("http://13.127.218.30:8000");
 
         socket.on("connect", () => {
             console.log(`Socket connection established with server with socket id ${socket.id} .`); // x8WIv7-mJelg7on_ALbx

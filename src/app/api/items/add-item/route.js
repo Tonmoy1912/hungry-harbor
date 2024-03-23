@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Categories from "@/models/category/categorySchema";
 import Items from "@/models/item/itemSchema";
 import { z } from "zod";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     let db_session=null;
@@ -30,7 +31,8 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, message: "Enter valid input", type: "Failed" }, { status: 400 });
         }
         let { name, image, description, price, category, in_stock, global_order, category_order } = parsedBody.data;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         db_session=await mongoose.startSession();
         db_session.startTransaction();
         let db_category = await Categories.findOne({ category }).session(db_session);

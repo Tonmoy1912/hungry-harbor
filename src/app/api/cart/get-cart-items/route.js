@@ -3,6 +3,7 @@ import Carts from "@/models/cart/cartSchema";
 import Items from "@/models/item/itemSchema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { mongoConnect } from "@/config/moongose";
 
 export async function GET(request){
     try{
@@ -11,6 +12,7 @@ export async function GET(request){
             return NextResponse.json({ok:false,message:"User not logged in"},{status:400});
         }
         const userId=session.user.id;
+        await mongoConnect();
         let cart=await Carts.findOne({user:userId}).populate({
             path:"items",
             populate:{

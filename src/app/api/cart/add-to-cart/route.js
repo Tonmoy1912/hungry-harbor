@@ -4,6 +4,7 @@ import Items from "@/models/item/itemSchema";
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -15,7 +16,8 @@ export async function POST(request){
         const itemId=body.item_id;
         const toBuy=body.toBuy;
         const userId=session.user.id;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         let item=await Items.findById(itemId).select({name:1});
         if(!item){
             return NextResponse.json({ok:false,message:"The item doesn't exist."},{status:400});

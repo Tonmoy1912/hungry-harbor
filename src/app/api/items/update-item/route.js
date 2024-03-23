@@ -7,6 +7,7 @@ import Items from "@/models/item/itemSchema";
 import { z } from "zod";
 import { initializeApp } from "firebase/app";
 import { getStorage,ref, deleteObject } from "firebase/storage";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     let db_session = null;
@@ -33,7 +34,8 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, message: "Enter valid input", type: "Failed" }, { status: 400 });
         }
         let { id, name, image, description, price, category, in_stock, global_order, category_order } = parsedBody.data;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
 
 
         //put inside db transaction............................

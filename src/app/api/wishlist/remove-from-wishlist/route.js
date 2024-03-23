@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import WishLists from "@/models/wishList/wishLishSchema";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -12,6 +13,7 @@ export async function POST(request){
         const body=await request.json();
         const itemId=body.item_id;
         const userId=session.user.id;
+        await mongoConnect();
         const res=await WishLists.updateOne({user:userId},{$pull:{items:itemId}});
         // console.log(res);
         if(res.modifiedCount==0){

@@ -6,6 +6,7 @@ import Reviews from "@/models/review/reviewSchema";
 import Items from "@/models/item/itemSchema";
 import { z } from 'zod';
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     let db_session = null;
@@ -27,7 +28,8 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, message: "Invalid input." }, { status: 400 });
         }
         const { reviewId } = parsedData.data;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         db_session = await mongoose.startSession();
         db_session.startTransaction();
         const prevReview = await Reviews.findById(reviewId)

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
 import Categories from "@/models/category/categorySchema";
 import Items from "@/models/item/itemSchema";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     let db_session=null;
@@ -15,7 +16,8 @@ export async function POST(request){
         let body=await request.json();
         let {name}=body;
         name=name.trim();
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         db_session=await mongoose.startSession();
         db_session.startTransaction();
         let db_item=await Items.findOne({name,removed:false}).select({name:1,removed:1,category:1,in_stock:1}).session(db_session);

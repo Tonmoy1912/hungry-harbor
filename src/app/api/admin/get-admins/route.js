@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import mongoose from "mongoose";
 import Owners from "@/models/owner/ownerSchema";
+import { mongoConnect } from "@/config/moongose";
 
 export async function GET(request){
     try{
@@ -10,7 +11,8 @@ export async function GET(request){
         // if(!session || !session.user.isAdmin){
         //     return NextResponse.json({ok:false,message:"You are not authorized",type:"Info"},{status:400});
         // }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const admins=await Owners.find({}).populate({
             path:"user",
             select:"name email phone address"

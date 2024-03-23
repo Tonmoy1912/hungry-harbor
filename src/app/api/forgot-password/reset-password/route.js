@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import Users from "@/models/user/userSchema";
 import bcrypt from "bcrypt";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     try {
@@ -26,7 +27,8 @@ export async function POST(request) {
         let tokenObj = jwt.verify(token, process.env.FORGOT_PASSWORD_KEY);
         // console.log("tokenObj",tokenObj);
         let {email} = tokenObj;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const user = await Users.findOne({ email: email }).select({ email: 1, password: 1 });
         if (!user) {
             return NextResponse.json({ ok: false, message: "No user with the given email" }, { status: 400 });

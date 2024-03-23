@@ -5,6 +5,7 @@ import mongoose, { mongo } from "mongoose";
 import Items from "@/models/item/itemSchema";
 import { z } from "zod";
 import { itemUpdateSync } from "@/util/item_update_sync";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     let db_session=null;
@@ -23,7 +24,8 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, message: "Enter valid input", type: "Failed" }, { status: 400 });
         }
         let { id } = parsedBody.data;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
 
 
         //put inside db transaction............................

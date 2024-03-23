@@ -8,6 +8,7 @@ import { createHmac } from "crypto";
 import Razorpay from "razorpay";
 import { itemUpdateSync } from "@/util/item_update_sync";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { mongoConnect } from "@/config/moongose";
 
 //always send status=ok and status code=200 to convince the razorpay server that our server is running..
 
@@ -32,7 +33,8 @@ export async function POST(request) {
         const { id: payment_id, order_id } = body.payload.payment.entity;
         // console.log("payment id:", payment_id);
         // console.log("order id:", order_id);
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
 
         //first mark the order as paid
         await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true,active:"settled",status:"cancelled" } });

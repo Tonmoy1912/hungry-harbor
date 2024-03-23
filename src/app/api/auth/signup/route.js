@@ -5,10 +5,12 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import {z} from "zod"
 import Users from "@/models/user/userSchema";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const body=await request.json();
         // console.log("body",body);
         for( let i in body){

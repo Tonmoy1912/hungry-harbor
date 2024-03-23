@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Owners from "@/models/owner/ownerSchema";
 import Users from "@/models/user/userSchema";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -15,7 +16,8 @@ export async function POST(request){
         const body=await request.json();
         let {email}=body;
         email=email.trim();
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const user=await Users.findOne({email:email}).select({name:1,email:1,phone:1,address:1});
         if(!user){
             return NextResponse.json({ok:false,message:"No user found",type:"Failed"},{status:400});

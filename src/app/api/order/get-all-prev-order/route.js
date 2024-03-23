@@ -6,6 +6,7 @@ import Items from "@/models/item/itemSchema";
 import Users from "@/models/user/userSchema";
 import mongoose from "mongoose";
 import { z } from 'zod';
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -23,7 +24,8 @@ export async function POST(request){
             return NextResponse.json({ ok: false, message: "Invalid input." }, { status: 400 });
         }
         const { page_no, row_per_page } = parsedData.data;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const orders=await Orders.find({active:"settled"})
         .sort({date:-1})
         .skip(page_no*row_per_page)

@@ -3,6 +3,7 @@ import { authOptions } from "../[...nextauth]/route";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Users from "@/models/user/userSchema";
+import { mongoConnect } from "@/config/moongose";
 
 export async function GET(){
     try{
@@ -10,7 +11,8 @@ export async function GET(){
         if(!session){
             return NextResponse.json({ok:false,session:null},{status:200});
         }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const user=await Users.findById(session.user.id).select("name email avatar phone address");
         // console.log("User data on server",user);
         return NextResponse.json({ok:true,userData:user},{status:200});

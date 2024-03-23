@@ -5,6 +5,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import Reviews from "@/models/review/reviewSchema";
 import Items from "@/models/item/itemSchema";
 import  {z} from 'zod';
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     let db_session=null;
@@ -28,7 +29,8 @@ export async function POST(request){
         if(!parsedData.success){
             return NextResponse.json({ok:false,message:"Invalid input."},{status:400});
         }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const parsedBody=parsedData.data;
         const {itemId,rating,review}=parsedBody;
         const itemCount=await Items.findById(itemId).countDocuments();

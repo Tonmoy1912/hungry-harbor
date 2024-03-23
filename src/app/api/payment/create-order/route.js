@@ -7,6 +7,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import Razorpay from "razorpay";
 import Users from "@/models/user/userSchema";
 import Orders from "@/models/order/orderSchema";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
     let db_session = null;
@@ -19,7 +20,8 @@ export async function POST(request) {
         let { items, cooking_instruction } = body;
         cooking_instruction=!cooking_instruction?"":cooking_instruction.trim();
         let in_stock = true;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         db_session=await mongoose.startSession();
         db_session.startTransaction();
         let message = "Only";

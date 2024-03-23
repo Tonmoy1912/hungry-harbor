@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../[...nextauth]/route";
 import mongoose from "mongoose";
 import Users from "@/models/user/userSchema";
+import { mongoConnect } from "@/config/moongose";
 
 
 export async function POST(request) {
@@ -20,7 +21,8 @@ export async function POST(request) {
         if (body.name == "email") {
             return NextResponse.json({ ok: false, message: "Email can't be changed" }, { status: 400 });
         }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         if (body.name == "name" || body.name == "phone" || body.name == "address") {
             const user=await Users.findByIdAndUpdate(session.user.id, { [body.name] : body.value });
             // console.log("user",user);

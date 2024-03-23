@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Owners from "@/models/owner/ownerSchema";
 import Users from "@/models/user/userSchema";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -18,7 +19,8 @@ export async function POST(request){
         if(email==process.env.DEVELOPER){
             return NextResponse.json({ok:false,message:"You can't remove the developer",type:"Info"},{status:400});
         }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         const result=await Owners.deleteOne({email:email});
         if(result.deletedCount==0){
             const deletedUser=await Users.findOne({email:email}).select({_id:1});

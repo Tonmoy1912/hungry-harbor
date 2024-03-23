@@ -10,10 +10,12 @@ import { IoStarSharp } from "react-icons/io5";
 import { StopProgress } from '@/components/util/util';
 import { ReviewWindow } from '@/components/review/ReviewComponents';
 import { PrevButton } from '@/components/button/ButtonComponents';
+import { mongoConnect } from '@/config/moongose';
 
 export default async function page({ params }) {
     try {
-        mongoose.connect(process.env.MONGO_URL);
+        // mongoose.connect(process.env.MONGO_URL);
+        mongoConnect();
         const item = await Items.findById(params.id).select({
             global_order: 0, category_order: 0, date: 0, __v: 0
         });

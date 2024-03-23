@@ -8,6 +8,7 @@ import bcrypt from "bcrypt";
 import { z } from "zod"
 import Users from "@/models/user/userSchema";
 import Owners from "@/models/owner/ownerSchema";
+import { mongoConnect } from "@/config/moongose";
 
 function generateRandomString(length) {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -43,7 +44,8 @@ export const authOptions = {
                     // return NextResponse.json({ ok: false, message: "Enter valid input" }, { status: 400 });
                     return null;
                 }
-                await mongoose.connect(process.env.MONGO_URL);
+                // await mongoose.connect(process.env.MONGO_URL);
+                await mongoConnect();
                 const prevUser = await Users.findOne({ email }).select({ email: 1, password: 1, name: 1 });
                 if (!prevUser) {
                     // return NextResponse.json({ ok: false, message: "User doesn't exist" }, { status: 400 });
@@ -65,7 +67,8 @@ export const authOptions = {
     ],
     callbacks: {
         async jwt({ token, account, user }) {
-            await mongoose.connect(process.env.MONGO_URL);
+            // await mongoose.connect(process.env.MONGO_URL);
+            await mongoConnect();
             // console.log("user in jwt",user);
             if (account && account.provider == "google") {//signing in
                 // await mongoose.connect(process.env.MONGO_URL);

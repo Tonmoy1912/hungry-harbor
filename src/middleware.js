@@ -1,11 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
 
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request) {
-    //   return NextResponse.redirect(new URL('/home', request.url))
-    // console.log("Process.env", process.env.HOST);
-    // console.log(`${request.nextUrl.pathname} get called`);
+    // try{
+        
+    // }
+    // catch(err){
+    //     return NextResponse.json({ok:false,message:"Error in middleware: "+err.message},{status:500});
+    // }
 }
 
 // See "Matching Paths" below to learn more

@@ -3,6 +3,7 @@ import { authOptions } from "../../auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import mongoose from "mongoose";
 import Categories from "@/models/category/categorySchema";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
@@ -16,7 +17,8 @@ export async function POST(request){
         if(category==""){
             return NextResponse.json({ok:false,message:"Enter valid category",type:"Failed"},{status:400});
         }
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         let data=await Categories.findOne({category});
         if(!data){
             return NextResponse.json({ok:false,message:"No such category",type:"Failed"},{status:400});

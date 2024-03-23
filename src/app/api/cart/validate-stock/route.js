@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import Carts from "@/models/cart/cartSchema";
 import Items from "@/models/item/itemSchema";
 import mongoose from "mongoose";
+import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request){
     try{
         const body=await request.json();
         const {items}=body;
         let in_stock=true;
-        await mongoose.connect(process.env.MONGO_URL);
+        // await mongoose.connect(process.env.MONGO_URL);
+        await mongoConnect();
         let message="Only";
         for(let x of items){
             let dbItem=await Items.findById(x.item._id).select({in_stock:1});
