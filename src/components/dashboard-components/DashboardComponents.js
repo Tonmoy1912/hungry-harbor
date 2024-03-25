@@ -60,7 +60,7 @@ export function DashboardComponents() {
   const data1 = {
     labels: stats.map(x=>getFormatedDate(new Date(x.date))),
     datasets: [{
-      label: "Sells",
+      label: "Sells (in Rupees)",
       data: stats.map(x=>x.sells),
       backgroundColor: "blue"
     }]

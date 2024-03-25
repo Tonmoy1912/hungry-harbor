@@ -8,6 +8,7 @@ import Razorpay from "razorpay";
 import Users from "@/models/user/userSchema";
 import Orders from "@/models/order/orderSchema";
 import { mongoConnect } from "@/config/moongose";
+import { getOpeningTime } from "@/components/shop-open-close-components/shop-open-close-server-component";
 
 export async function POST(request) {
     let db_session = null;
@@ -15,6 +16,10 @@ export async function POST(request) {
         const session = await getServerSession(authOptions);
         if (!session) {
             return NextResponse.json({ ok: false, message: "User not logged in" }, { status: 400 });
+        }
+        let openingtime=await getOpeningTime();
+        if(openingtime){
+            return NextResponse.json({ok:false,message:"The shop is currently closed. So, you can't make any order now."},{status:400});
         }
         const body = await request.json();
         let { items, cooking_instruction } = body;

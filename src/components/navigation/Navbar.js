@@ -9,6 +9,7 @@ import { FaGithub } from "react-icons/fa";
 import { SiLeetcode } from "react-icons/si";
 import { SiCodeforces } from "react-icons/si";
 import Link from 'next/link';
+import { ClosedTopBar } from '../shop-open-close-components/ShopOpenCloseComponents';
 
 export default function Navbar({ children }) {
     return (
@@ -16,6 +17,7 @@ export default function Navbar({ children }) {
             <TopBar />
             <LeftBar />
             <div className='pt-12 pl-0 sm:pl-56 md:pl-64 w-full min-h-screen bg-white'>
+                <ClosedTopBar />
                 {children}
             </div>
             <Footer />
@@ -44,8 +46,9 @@ export function Footer() {
 
                 <div className='flex flex-col gap-1 items-start text-white '>
                     <h1 className='text-white font-bold md:text-lg pb-0 sm:pb-3' > Quick Links </h1>
-                    <Link href={"/terms-and-condition"} >Terms & Conditions</Link>
-                    <Link href={"refund-and-cancellation"} >Refund & Cancellation</Link>
+                    <Link href={"/terms-and-conditions"} >Terms & Conditions</Link>
+                    <Link href={"/privacy-policy"} >Privacy Policy</Link>
+                    <Link href={"/refund-and-cancellation"} >Refund & Cancellation</Link>
                 </div>
 
                 <div className='flex flex-col gap-1 items-start text-white '>
