@@ -2,20 +2,23 @@
 import React, { Fragment, useState, useEffect, useRef } from 'react';
 import { List, AutoSizer, CellMeasurer, CellMeasurerCache, InfiniteLoader } from 'react-virtualized';
 import { toast, Slide, Bounce } from 'react-toastify';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { progressAtom } from '@/store/progressAtom';
+import { notificatioCountAtom } from '@/store/notificationCountAtom';
 
 export function NotificationsWindow() {
     const [hasNext, setHasNext] = useState(true);
     const [isLoadingNextPage, setIsLoadingNextPage] = useState(false);
     const [pageNo, setPageNo] = useState(0);
     const [notifications, setNotifications] = useState([]);
+    const setNotiCount=useSetRecoilState(notificatioCountAtom);
     const cache = useRef(new CellMeasurerCache({
         fixedWidth: true,
         defaultHeight: 100,
     }));
 
     useEffect(() => {
+        setNotiCount(0);
         return () => {
             cache.current.clearAll();
         }
@@ -189,4 +192,26 @@ function NotificationBox({ index, style, parent, notifications, cache }) {
 
         </CellMeasurer>
     );
+}
+
+export function NewNotiIndicator(){
+    const noti_count=useRecoilValue(notificatioCountAtom);
+    if(noti_count<=0){
+        return null;
+    }
+    return (
+        <div className=' absolute -top-1 -right-1 h-5 w-5 bg-red-600 rounded-full animate-bounce'>
+        </div>
+    )
+}
+
+export function NewNotiIndicatorTop(){
+    const noti_count=useRecoilValue(notificatioCountAtom);
+    if(noti_count<=0){
+        return null;
+    }
+    return (
+        <div className=' absolute -top-1 -right-2 h-3 w-3 bg-red-600 rounded-full animate-ping'>
+        </div>
+    )
 }

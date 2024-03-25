@@ -4,6 +4,7 @@ import React, { Fragment, useState } from 'react'
 import { useSetRecoilState } from 'recoil';
 import { notiAtom } from '@/store/notiState';
 import Link from 'next/link';
+import { StopProgress } from '@/components/util/util';
 
 export default function page() {
     const [processing, setProcessing] = useState(false);
@@ -57,6 +58,7 @@ export default function page() {
     }
     return (
         <Fragment>
+            <StopProgress/>
             <div className='w-11/12  p-3 md:p-8 flex flex-col justify-start items-center sm:items-start gap-5 bg-blue-200 rounded-lg shadow-lg shadow-blue-400 mx-auto my-8'>
 
                 <h1 className='text-3xl font-extrabold text-black self-center'>Change Password</h1>

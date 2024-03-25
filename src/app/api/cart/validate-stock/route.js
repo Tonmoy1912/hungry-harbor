@@ -3,6 +3,7 @@ import Carts from "@/models/cart/cartSchema";
 import Items from "@/models/item/itemSchema";
 import mongoose from "mongoose";
 import { mongoConnect } from "@/config/moongose";
+import { getOpeningTime } from "@/components/shop-open-close-components/shop-open-close-server-component";
 
 export async function POST(request){
     try{
@@ -10,6 +11,10 @@ export async function POST(request){
         const {items}=body;
         let in_stock=true;
         // await mongoose.connect(process.env.MONGO_URL);
+        let openingtime=await getOpeningTime();
+        if(openingtime){
+            return NextResponse.json({ok:false,message:"The shop is currently closed. So, you can't make any order now."},{status:400});
+        }
         await mongoConnect();
         let message="Only";
         for(let x of items){

@@ -1,21 +1,32 @@
 "use client";
 //completely done
 import React, { Fragment } from 'react'
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import { navAtom } from '@/store/navState';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { progressAtom } from '@/store/progressAtom';
 
 export default function ControlPanelLeftBar() {
     const [navState, setNavState] = useRecoilState(navAtom);
+    const setProgress=useSetRecoilState(progressAtom);
     const pathName=usePathname();
     useEffect(()=>{
         // console.log(pathName.split("/"));
         const arr=pathName.split("/");
         setNavState({...navState,curTab:arr[2]});
     },[pathName]);
+    useEffect(()=>{
+        setProgress(true);
+        const id=setTimeout(()=>{
+            setProgress(false);
+        },5000);
+        return ()=>{
+            clearTimeout(id);
+        }
+    },[navState]);
     return (
         <Fragment>
             {/* form desktop */}

@@ -1,9 +1,11 @@
+import { StopProgress } from '@/components/util/util'
 import React from 'react'
 
 export default function page() {
   const website="hungry-harbor.vercel.app"
   return (
     <div className='py-14 px-10 w-full bg-black text-white flex flex-col gap-4 justify-start items-start'>
+      <StopProgress/>
       <h1 className='pb-6 text-4xl font-extrabold text-center w-full'>Privacy Policy</h1>
 
       <p>

@@ -13,6 +13,7 @@ import Script from 'next/script';
 import { toast, Slide, Bounce } from 'react-toastify';
 import { notiAtom } from '@/store/notiState';
 import { useRouter } from 'next/navigation';
+import { StopProgress } from '@/components/util/util';
 
 export default function page() {
     const setProgress = useSetRecoilState(progressAtom);
@@ -199,6 +200,7 @@ export function PricingSummary() {
 
     return (
         <Fragment>
+            <StopProgress/>
             <div className="sticky bottom-2 p-1  bg-slate-200  flex flex-col gap-2 shadow-sm shadow-slate-600">
                 <div className='p-2 '>
                     <textarea name="" id="" cols="30" rows="4" className='rounded-md border border-blue-900 h-full w-full' placeholder='Any cooking instruction'

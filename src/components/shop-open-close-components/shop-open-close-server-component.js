@@ -9,7 +9,7 @@ export async function getOpeningTime() {
         if (data.length == 0) {
             return null;
         }
-        return data[0];
+        return JSON.stringify(data[0]);
     }
     catch(err){
         // console.log(err.message);

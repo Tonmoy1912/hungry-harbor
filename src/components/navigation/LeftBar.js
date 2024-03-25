@@ -1,23 +1,35 @@
 "use client";
 //completely done
 import React, { Fragment } from 'react'
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { navAtom } from '@/store/navState';
 import { sessionAtom } from '@/store/sessionStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { NewNotiIndicator } from '../notification-page-components/NotificationPageComponents';
+import { progressAtom } from '@/store/progressAtom';
 
 export default function LeftBar() {
     const [navState, setNavState] = useRecoilState(navAtom);
     const sessionState = useRecoilValue(sessionAtom);
+    const setProgress=useSetRecoilState(progressAtom);
     const pathName = usePathname();
     useEffect(() => {
         // console.log(pathName.split("/"));
         const arr = pathName.split("/");
         setNavState({ ...navState, curTab: arr[1] });
     }, [pathName]);
+    useEffect(()=>{
+        setProgress(true);
+        const id=setTimeout(()=>{
+            setProgress(false);
+        },5000);
+        return ()=>{
+            clearTimeout(id);
+        }
+    },[navState]);
     return (
         <Fragment>
             {/* form desktop */}
@@ -26,7 +38,7 @@ export default function LeftBar() {
 
                     <Link href={"/"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "" }) }}>Home</Link>
                     <Link href={"/items"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "items" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "items" }) }}>Items</Link>
-                    <Link href={"/notifications"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "notifications" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "notifications" }) }}>Notifications</Link>
+                    <Link href={"/notifications"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "notifications" ? "bg-blue-300 text-black" : ""} relative`} onClick={() => { setNavState({ ...navState, curTab: "notifications" }) }}>Notifications <NewNotiIndicator /> </Link>
                     <Link href={"/orders"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "orders" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "orders" }) }}>Orders</Link>
                     <Link href={"/wishlist"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "wishlist" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "wishlist" }) }}>Wishlist</Link>
                     <Link href={"/cart"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "cart" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "cart" }) }}>Cart</Link>
@@ -64,7 +76,7 @@ export default function LeftBar() {
 
                             <Link href={"/"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "", open: false }) }}>Home</Link>
                             <Link href={"/items"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "items" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "items", open: false }) }}>items</Link>
-                            <Link href={"/notifications"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "notifications" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "notifications", open: false }) }}>Notifications</Link>
+                            <Link href={"/notifications"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "notifications" ? "bg-blue-300 text-black" : ""} relative`} onClick={() => { setNavState({ ...navState, curTab: "notifications", open: false }) }}>Notifications <NewNotiIndicator /> </Link>
                             <Link href={"/orders"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "orders" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "orders", open: false }) }}>Orders</Link>
                             <Link href={"/wishlist"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "wishlist" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "wishlist", open: false }) }}>Wishlist</Link>
                             <Link href={"/cart"} className={`border border-white w-3/4 py-1 px-3 rounded-full hover:bg-blue-300 hover:text-black font-bold ${navState.curTab == "cart" ? "bg-blue-300 text-black" : ""}`} onClick={() => { setNavState({ ...navState, curTab: "cart", open: false }) }}>Cart</Link>

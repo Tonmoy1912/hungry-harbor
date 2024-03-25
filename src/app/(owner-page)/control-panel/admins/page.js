@@ -10,6 +10,7 @@ import { progressAtom } from '@/store/progressAtom';
 import { useSetRecoilState } from 'recoil';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notiAtom } from '@/store/notiState';
+import { StopProgress } from '@/components/util/util';
 
 
 export default function page() {
@@ -40,6 +41,7 @@ export default function page() {
   // }, []);
   return (
     <Fragment>
+      <StopProgress />
       <div className='p-2 md:p-5 flex flex-col justify-start items-start gap-6'>
         <AddButton setNoti={setNoti} fetchAdmins={fetchAdmins} />
         {admins.length != 0 ?

@@ -1,10 +1,12 @@
 import { TypingText } from "@/components/home-page-component/HomePageComponent";
+import { StopProgress } from "@/components/util/util";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="h-full w-full ">
+      <StopProgress/>
       <div className="flex flex-col justify-start items-center md:items-stretch md:flex-row md:justify-between bg-blue-900 md:-mb-8">
         <div className="w-full h-full md:w-1/2  justify-center pl-8 pt-20">
           <h1 className="text-transparent text-4xl bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-500 font-extrabold">Favourite Foods on Fingertips</h1>

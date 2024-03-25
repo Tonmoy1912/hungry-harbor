@@ -6,11 +6,13 @@ import { AddItemButton } from '@/components/item/AddItem';
 import AdminItemWindow from '@/components/item/AdminItemWindow';
 import { GrLinkNext } from "react-icons/gr";
 import Link from 'next/link';
+import { StopProgress } from '@/components/util/util';
 
 export default function page() {
 
   return (
     <Fragment>
+      <StopProgress/>
       <div className='mt-3 ml-3 flex justify-start items-center gap-3 flex-wrap'>
         <AddItemButton />
         <AddCategory />

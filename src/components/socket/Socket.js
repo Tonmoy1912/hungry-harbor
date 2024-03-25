@@ -7,6 +7,7 @@ import { sessionAtom } from '@/store/sessionStore';
 import { notiAtom } from '@/store/notiState';
 import { userActiveOrderAtom, adminActiveOrderAtom } from '@/store/orderAtom';
 import { useQueryClient } from '@tanstack/react-query';
+import { notificatioCountAtom } from '@/store/notificationCountAtom';
 
 export default function SocketComponent(){
     const session=useRecoilValue(sessionAtom);
@@ -23,6 +24,7 @@ function SocketComponentInternal() {
     const setNoti=useSetRecoilState(notiAtom);
     const setUserActiveOrders=useSetRecoilState(userActiveOrderAtom);
     const setAdminActiveOrders=useSetRecoilState(adminActiveOrderAtom);
+    const setNotiCount=useSetRecoilState(notificatioCountAtom);
     const queryClient=useQueryClient();
 
     useEffect(() => {
@@ -231,6 +233,8 @@ function SocketComponentInternal() {
                 theme: "colored",
                 transition: Bounce,
             });
+            //indication a new notification arrived
+            setNotiCount(1);
         });
 
         //to both user and owner when ever a item is updated

@@ -28,6 +28,7 @@ export default async function page({ params }) {
         }
         return (
             <div className='p-2' >
+                <StopProgress/>
                 <PrevButton />
                 <div className=' p-2 mt-2  bg-slate-200 shadow-md shadow-slate-500 flex flex-col sm:flex-row items-start rounded-sm'>
                     <div className='h-56 w-full sm:h-80 sm:w-1/2'>

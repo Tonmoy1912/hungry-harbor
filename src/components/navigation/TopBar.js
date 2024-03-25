@@ -11,12 +11,15 @@ import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 // import ProgressBar from '../progress-bar/ProgressBar';
 import Link from 'next/link';
+import { notificatioCountAtom } from '@/store/notificationCountAtom';
+import { NewNotiIndicatorTop } from '../notification-page-components/NotificationPageComponents';
 
 export default function TopBar() {
     const { data, status } = useSession();
     const [navState, setNavState] = useRecoilState(navAtom);
     const setSessionState = useSetRecoilState(sessionAtom);
     const router=useRouter();
+    const setNotiCount=useSetRecoilState(notificatioCountAtom);
 
     useEffect(() => {
         if (status == "authenticated") {
@@ -27,6 +30,18 @@ export default function TopBar() {
         else if (status == "unauthenticated") {
             setSessionState((session) => { return null });
         }
+        //setting unread notification count
+        fetch("/api/notification/get-unread-noti-count",{
+            cache:"no-store",
+            method:"GET"
+        })
+        .then(res=>res.json())
+        .then(res=>{
+            if(res.ok){
+                setNotiCount(res.noti_count);
+            }
+        })
+        .catch(err=>{});
     }, [status]);
     return (
         <Fragment>
@@ -34,12 +49,12 @@ export default function TopBar() {
                 <div className='flex gap-4 px-3'>
                     {
                         navState.open ? (
-                            <h1 className='flex items-center sm:hidden'><RxCross1 className='text-white scale-125 ' onClick={() => { setNavState({ ...navState, open: false }) }} /></h1>
+                            <h1 className='flex items-center sm:hidden relative'><RxCross1 className='text-white scale-125 ' onClick={() => { setNavState({ ...navState, open: false }) }} />   </h1>
                         ) : (
-                            <h1 className='flex items-center sm:hidden'><IoReorderThree className='text-white scale-150 ' onClick={() => { setNavState({ ...navState, open: true }) }} /></h1>
+                            <h1 className='flex items-center sm:hidden relative'><IoReorderThree className='text-white scale-150 ' onClick={() => { setNavState({ ...navState, open: true }) }} /> <NewNotiIndicatorTop /> </h1>
                         )
                     }
-                    <h1 className='text-white font-bold sm:text-2xl cursor-pointer' onClick={()=>{router.push("/")}} > Hungry Harbor </h1>
+                    <h1 className='relative text-white font-bold sm:text-2xl cursor-pointer' onClick={()=>{router.push("/")}} > Hungry Harbor  </h1>
                 </div>
                 <div className='px-4 flex gap-2'>
                     {

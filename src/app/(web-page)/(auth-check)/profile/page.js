@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSetRecoilState } from 'recoil';
 import { notiAtom } from '@/store/notiState';
 import Link from 'next/link';
+import { StopProgress } from '@/components/util/util';
 
 export default function page() {
   const { data, status} = useQuery({
@@ -46,7 +47,7 @@ export default function page() {
 
   return (
     <div className='w-full flex flex-col gap-6 justify-start items-center p-6 bg-slate-300 '>
-
+      <StopProgress/>
       <div className='p-5 w-11/12 flex flex-col gap-4 justify-center items-center self-center py-6 bg-blue-500 rounded-lg shadow-lg shadow-blue-600'>
         <Image priority={true} src={data.avatar} height={200} width={200} alt='user profile' className='rounded-full h-40 w-40'></Image>
         <Link href={"/profile/change-password"} className='px-1 border border-black text-sm bg-slate-300 text-black'>Change Password</Link>
