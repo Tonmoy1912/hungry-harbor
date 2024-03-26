@@ -18,15 +18,15 @@ export default function ControlPanelLeftBar() {
         const arr=pathName.split("/");
         setNavState({...navState,curTab:arr[2]});
     },[pathName]);
-    useEffect(()=>{
-        setProgress(true);
-        const id=setTimeout(()=>{
-            setProgress(false);
-        },5000);
-        return ()=>{
-            clearTimeout(id);
-        }
-    },[navState]);
+    // useEffect(()=>{
+    //     setProgress(true);
+    //     const id=setTimeout(()=>{
+    //         setProgress(false);
+    //     },5000);
+    //     return ()=>{
+    //         clearTimeout(id);
+    //     }
+    // },[navState]);
     return (
         <Fragment>
             {/* form desktop */}

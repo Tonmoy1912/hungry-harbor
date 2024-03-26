@@ -21,15 +21,15 @@ export default function LeftBar() {
         const arr = pathName.split("/");
         setNavState({ ...navState, curTab: arr[1] });
     }, [pathName]);
-    useEffect(()=>{
-        setProgress(true);
-        const id=setTimeout(()=>{
-            setProgress(false);
-        },5000);
-        return ()=>{
-            clearTimeout(id);
-        }
-    },[navState]);
+    // useEffect(()=>{
+    //     setProgress(true);
+    //     const id=setTimeout(()=>{
+    //         setProgress(false);
+    //     },5000);
+    //     return ()=>{
+    //         clearTimeout(id);
+    //     }
+    // },[navState]);
     return (
         <Fragment>
             {/* form desktop */}

@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import Categories from "@/models/category/categorySchema";
 import { mongoConnect } from "@/config/moongose";
 
+export const dynamic = 'force-dynamic' ;
+
 export async function GET(request){
     try{
         // await mongoose.connect(process.env.MONGO_URL);

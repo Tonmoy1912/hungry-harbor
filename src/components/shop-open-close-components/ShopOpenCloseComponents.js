@@ -8,7 +8,7 @@ export function ClosedTopBar() {
     async function SetOpeningTime(){
         const res=await getOpeningTime();
         setData(res);
-        console.log("res",res);
+        // console.log("res",res);
     }
 
     useEffect(()=>{

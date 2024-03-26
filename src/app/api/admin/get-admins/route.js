@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import Owners from "@/models/owner/ownerSchema";
 import { mongoConnect } from "@/config/moongose";
 
+export const dynamic = 'force-dynamic' ;
+
 export async function GET(request){
     try{
         // const session=await getServerSession(authOptions);

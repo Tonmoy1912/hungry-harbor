@@ -46,9 +46,9 @@ export function Footer() {
 
                 <div className='flex flex-col gap-1 items-start text-white '>
                     <h1 className='text-white font-bold md:text-lg pb-0 sm:pb-3' > Quick Links </h1>
-                    <Link href={"/terms-and-conditions"} >Terms & Conditions</Link>
-                    <Link href={"/privacy-policy"} >Privacy Policy</Link>
-                    <Link href={"/refund-and-cancellation"} >Refund & Cancellation</Link>
+                    <Link href={"/"} >Terms & Conditions</Link>
+                    <Link href={"/"} >Privacy Policy</Link>
+                    <Link href={"/"} >Refund & Cancellation</Link>
                 </div>
 
                 <div className='flex flex-col gap-1 items-start text-white '>
