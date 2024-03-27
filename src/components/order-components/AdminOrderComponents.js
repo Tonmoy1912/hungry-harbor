@@ -426,7 +426,7 @@ function ActiveOrder({ order, setConfirmBoxObject, setActiveOrders }) {
                     {order.cooking_inst_status != 'pending' &&
                         (
                             <div>
-                                <span className='font-semibold'> Cooding instruction :</span> <button className={`${order.cooking_inst_status == 'rejected' ? "bg-red-600" : "bg-green-600"} py-0.5 px-1 rounded-md font-semibold text-white text-xs`} disabled={true} > {order.cooking_inst_status} </button>
+                                <span className='font-semibold'> Cooking instruction :</span> <button className={`${order.cooking_inst_status == 'rejected' ? "bg-red-600" : "bg-green-600"} py-0.5 px-1 rounded-md font-semibold text-white text-xs`} disabled={true} > {order.cooking_inst_status} </button>
                             </div>
                         )
                     }

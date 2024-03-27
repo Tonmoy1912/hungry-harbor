@@ -16,8 +16,8 @@ export async function POST(request){
         const body=await request.json();
         // await mongoose.connect(process.env.MONGO_URL);
         await mongoConnect();
-        const order=await Orders.findOne({_id:body._id,user:session.user.id}).select({
-            refunded:0,payment_failed:0,refundId:0,
+        const order=await Orders.findOne({_id:body._id}).select({
+            refunded:0,payment_failed:0,refundId:0
         })
         .populate({
             path:"items.item",
@@ -27,6 +27,9 @@ export async function POST(request){
             path:'user',
             select:"name email phone"
         });
+        if(order && order.user!=session.user.id && !session.user.isAdmin){
+            return NextResponse.json({ok:false,message:"You are not authorized."},{status:400});
+        }
         return NextResponse.json({ok:true,order:order},{status:200});
     }
     catch(err){

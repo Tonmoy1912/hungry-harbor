@@ -9,9 +9,9 @@ import { userActiveOrderAtom, adminActiveOrderAtom } from '@/store/orderAtom';
 import { useQueryClient } from '@tanstack/react-query';
 import { notificatioCountAtom } from '@/store/notificationCountAtom';
 
-export default function SocketComponent(){
-    const session=useRecoilValue(sessionAtom);
-    if(!session){
+export default function SocketComponent() {
+    const session = useRecoilValue(sessionAtom);
+    if (!session) {
         return null;
     }
     return (
@@ -21,17 +21,17 @@ export default function SocketComponent(){
 
 function SocketComponentInternal() {
 
-    const setNoti=useSetRecoilState(notiAtom);
-    const setUserActiveOrders=useSetRecoilState(userActiveOrderAtom);
-    const setAdminActiveOrders=useSetRecoilState(adminActiveOrderAtom);
-    const setNotiCount=useSetRecoilState(notificatioCountAtom);
-    const queryClient=useQueryClient();
+    const setNoti = useSetRecoilState(notiAtom);
+    const setUserActiveOrders = useSetRecoilState(userActiveOrderAtom);
+    const setAdminActiveOrders = useSetRecoilState(adminActiveOrderAtom);
+    const setNotiCount = useSetRecoilState(notificatioCountAtom);
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         //generating socket server origin
-        let socketOrigin = window.origin.substring(0, window.origin.lastIndexOf(":") + 1) + "8000";
+        // let socketOrigin = window.origin.substring(0, window.origin.lastIndexOf(":") + 1) + "8000";
         // const socket = io(socketOrigin);
-        const socket = io("http://13.127.218.30:8000");
+        const socket = io("https://hungryharborss.tonmoy1912.in");
 
         socket.on("connect", () => {
             console.log(`Socket connection established with server with socket id ${socket.id} .`); // x8WIv7-mJelg7on_ALbx
@@ -57,24 +57,24 @@ function SocketComponentInternal() {
         });
 
         //test
-        socket.on("test-hello-world",(msg)=>{
-            setNoti({show:true,message:msg,type:"Info"});
+        socket.on("test-hello-world", (msg) => {
+            setNoti({ show: true, message: msg, type: "Info" });
         });
 
         //acceptOrder event for user
-        socket.on("acceptOrder",function(data){
-            setUserActiveOrders(prev=>{
-                return prev.map(x=>{
-                    if(data._id==x._id){
+        socket.on("acceptOrder", function (data) {
+            setUserActiveOrders(prev => {
+                return prev.map(x => {
+                    if (data._id == x._id) {
                         return {
                             ...x,
-                            status:data.status,
-                            active:data.active,
-                            ready_by:data.ready_by,
-                            cooking_inst_status:data.cooking_inst_status
+                            status: data.status,
+                            active: data.active,
+                            ready_by: data.ready_by,
+                            cooking_inst_status: data.cooking_inst_status
                         }
                     }
-                    else{
+                    else {
                         return x;
                     }
                 })
@@ -107,11 +107,11 @@ function SocketComponentInternal() {
             //     });
             // }
         });
-        
+
         //deliveredOrder event for user
-        socket.on("deliveredOrder",function(data){
-            setUserActiveOrders(prev=>{
-                return prev.filter(x=>x._id!=data._id);
+        socket.on("deliveredOrder", function (data) {
+            setUserActiveOrders(prev => {
+                return prev.filter(x => x._id != data._id);
             });
             //set the notification
             // toast.success("You order is delivered", {
@@ -128,17 +128,17 @@ function SocketComponentInternal() {
         });
 
         //readyOrder event for user
-        socket.on("readyOrder",function(data){
-            setUserActiveOrders(prev=>{
-                return prev.map(x=>{
-                    if(data._id==x._id){
+        socket.on("readyOrder", function (data) {
+            setUserActiveOrders(prev => {
+                return prev.map(x => {
+                    if (data._id == x._id) {
                         return {
                             ...x,
-                            status:data.status,
-                            active:data.active
+                            status: data.status,
+                            active: data.active
                         }
                     }
-                    else{
+                    else {
                         return x;
                     }
                 })
@@ -158,9 +158,9 @@ function SocketComponentInternal() {
         });
 
         //userCancelOrder event for owner
-        socket.on("userCancelOrder",function(data){
-            setAdminActiveOrders(prev=>{
-                return prev.filter(x=>x._id!=data._id);
+        socket.on("userCancelOrder", function (data) {
+            setAdminActiveOrders(prev => {
+                return prev.filter(x => x._id != data._id);
             });
             // set the notification
             // toast.error("A custom has cancelled his order", {
@@ -177,7 +177,7 @@ function SocketComponentInternal() {
         });
 
         //new order added for admin
-        socket.on("newOrder",function(data){
+        socket.on("newOrder", function (data) {
             toast.success("A new order received", {
                 position: "top-center",
                 autoClose: 3000,
@@ -195,33 +195,33 @@ function SocketComponentInternal() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({_id:data._id})
+                body: JSON.stringify({ _id: data._id })
             })
-            .then(res=>res.json())
-            .then(res=>{
-                if(res.ok){
-                    setAdminActiveOrders(prev=>{
-                        return [{...res.order},...prev];
+                .then(res => res.json())
+                .then(res => {
+                    if (res.ok) {
+                        setAdminActiveOrders(prev => {
+                            return [{ ...res.order }, ...prev];
+                        });
+                    }
+                })
+                .catch(err => {
+                    toast.success(err.message, {
+                        position: "top-center",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: "colored",
+                        transition: Bounce,
                     });
-                }
-            })
-            .catch(err=>{
-                toast.success(err.message, {
-                    position: "top-center",
-                    autoClose: 3000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: "colored",
-                    transition: Bounce,
                 });
-            });
         });
 
         //for realtime notification to the user
-        socket.on("receivedNotification",function(data){
+        socket.on("receivedNotification", function (data) {
             toast.info(data.message, {
                 position: "top-center",
                 autoClose: 3000,
@@ -238,9 +238,9 @@ function SocketComponentInternal() {
         });
 
         //to both user and owner when ever a item is updated
-        socket.on("itemsUpdate",function(){
-            queryClient.invalidateQueries({queryKey:["all-items"]});
-            queryClient.invalidateQueries({queryKey:["cartitems"]});
+        socket.on("itemsUpdate", function () {
+            queryClient.invalidateQueries({ queryKey: ["all-items"] });
+            queryClient.invalidateQueries({ queryKey: ["cartitems"] });
         });
 
         return () => {
