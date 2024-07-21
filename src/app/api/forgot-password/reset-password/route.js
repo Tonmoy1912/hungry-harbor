@@ -26,8 +26,11 @@ export async function POST(request) {
         token = token.value;
         let tokenObj = jwt.verify(token, process.env.FORGOT_PASSWORD_KEY);
         // console.log("tokenObj",tokenObj);
-        let {email} = tokenObj;
+        let {email,isVerified} = tokenObj;
         // await mongoose.connect(process.env.MONGO_URL);
+        if(!isVerified){
+            return NextResponse.json({ ok: false, message: "The otp is not verified." }, { status: 400 });
+        }
         await mongoConnect();
         const user = await Users.findOne({ email: email }).select({ email: 1, password: 1 });
         if (!user) {

@@ -22,7 +22,8 @@ export async function POST(request) {
             return NextResponse.json({ok:false,message:"Invalid otp"},{status:400});
         }
         const {email,generated_otp}=tokenObj
-        tokenObj={email,generated_otp,received_otp:generated_otp};
+        // tokenObj={email,generated_otp,received_otp:generated_otp};
+        tokenObj={email,generated_otp,isVerified:true};
         // console.log(tokenObj);
         token=jwt.sign(tokenObj,process.env.FORGOT_PASSWORD_KEY, { expiresIn: 5 * 60 });//in second
         cookieStore.set("otp-token", token);
