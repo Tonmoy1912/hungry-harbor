@@ -21,7 +21,7 @@ export default function LogIn() {
 
   const [data, setData] = useState({ email: "", password: "" });
   const [isLoading, setLoading] = useState(false);
-  const  setNotiData =useSetRecoilState(notiAtom);
+  const setNotiData = useSetRecoilState(notiAtom);
   const router = useRouter();
 
   function closeNoti() {
@@ -47,10 +47,10 @@ export default function LogIn() {
     if (!isEmailValid(data.email)) {
       // alert("Enter a valid email");
       setLoading(false);
-      setNotiData({show:true,message:"Enter a valid email",type:"Message"});
+      setNotiData({ show: true, message: "Enter a valid email", type: "Message" });
       return;
     }
-    
+
     const result = await signIn("credentials", { redirect: false, email: data.email, password: data.password });
     setLoading(false);
     if (result.ok) {
@@ -60,7 +60,7 @@ export default function LogIn() {
     }
     else {
       // console.log("Enter valid credentials");
-      setNotiData({show:true,message:"Enter valid credentials",type:"Failed"});
+      setNotiData({ show: true, message: "Enter valid credentials", type: "Failed" });
     }
   }
 
@@ -82,7 +82,7 @@ export default function LogIn() {
             }
 
             {/* or seperator */}
-            <Link href={"/forgot-password"} className='text-sm text-slate-50 self-end underline -my-3'>Forgot Password</Link>
+            {/* <Link href={"/forgot-password"} className='text-sm text-slate-50 self-end underline -my-3'>Forgot Password</Link> */}
             <div className='flex justify-between items-baseline'>
               <div className='w-1/3 h-0.5 bg-white'></div>
               <span className='text-white text-md'>or</span>

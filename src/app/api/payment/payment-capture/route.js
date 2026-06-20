@@ -8,6 +8,7 @@ import { createHmac } from "crypto";
 import Razorpay from "razorpay";
 import { itemUpdateSync } from "@/util/item_update_sync";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
+import { sendEventToSocketServer } from "@/util/send_event";
 import { mongoConnect } from "@/config/moongose";
 import transporter from "@/config/nodemailer-config";
 
@@ -38,7 +39,7 @@ export async function POST(request) {
         await mongoConnect();
 
         //first mark the order as paid
-        await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true,active:"settled",status:"cancelled" } });
+        await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true, active: "settled", status: "cancelled" } });
 
         db_session = await mongoose.startSession();
         db_session.startTransaction();
@@ -67,35 +68,27 @@ export async function POST(request) {
             db_session = null;
             let instance = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_SECRET });
             await instance.payments.refund(payment_id, {
-                "amount": orderData.total_amount*100,
+                "amount": orderData.total_amount * 100,
                 "speed": "normal",
                 "receipt": orderData._id
             });
             sendNotiToSocketServerAndSave({
-                userId:orderData.user,
-                message:`Your order with receipt id: ${orderData._id} is cancelled. The money will be refunded within 5-7 working days.`,
-                is_read:false
+                userId: orderData.user,
+                message: `Your order with receipt id: ${orderData._id} is cancelled. The money will be refunded within 5-7 working days.`,
+                is_read: false
             })
             return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
         }
         orderData.paymentId = payment_id;
         orderData.paid = true;
         orderData.payment_failed = false;
-        orderData.active="active";
-        orderData.status="pending";
+        orderData.active = "active";
+        orderData.status = "pending";
         await orderData.save();
         await db_session.commitTransaction();
         itemUpdateSync();
         db_session = null;
-        fetch(`${process.env.SS_HOST}/api/order/new-order`, {
-            cache: "no-store",
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Pass-Code": process.env.PASS_CODE
-            },
-            body: JSON.stringify({_id:orderData._id})
-        });
+        sendEventToSocketServer("/api/order/new-order", { _id: orderData._id });
         //for test mode.............................................................................................................................................
         transporter.sendMail({
             from: 'Hungry Harbor', // sender address

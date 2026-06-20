@@ -6,6 +6,7 @@ import Orders from "@/models/order/orderSchema";
 import Razorpay from "razorpay";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 import { mongoConnect } from "@/config/moongose";
+import { sendEventToSocketServer } from "@/util/send_event";
 
 export async function POST(request) {
     try {
@@ -33,8 +34,8 @@ export async function POST(request) {
         if (!order) {
             return NextResponse.json({ ok: false, message: "Order doesn't exist" }, { status: 400 });
         }
-        if(order.status!='pending'){
-            return NextResponse.json({ok:false,message:"Only pending order can be accepted."},{status:400});
+        if (order.status != 'pending') {
+            return NextResponse.json({ ok: false, message: "Only pending order can be accepted." }, { status: 400 });
         }
         if (accepted) {
             order.status = "accepted";
@@ -43,9 +44,9 @@ export async function POST(request) {
             order.cooking_inst_status = cooking_inst_status == "accept" ? "accepted" : "rejected";
             await order.save();
             sendNotiToSocketServerAndSave({
-                userId:order.user,
-                message:`Your order with receipt id : ${order._id} is accepted`,
-                is_read:false
+                userId: order.user,
+                message: `Your order with receipt id : ${order._id} is accepted`,
+                is_read: false
             })
         }
         else {
@@ -67,20 +68,12 @@ export async function POST(request) {
             }
             await order.save();
             sendNotiToSocketServerAndSave({
-                userId:order.user,
-                message:`Your order with receipt id : ${order._id} is cancelled. ${order.refunded && "The money will be refunded within 5-7 working days."}`,
-                is_read:false
+                userId: order.user,
+                message: `Your order with receipt id : ${order._id} is cancelled. ${order.refunded && "The money will be refunded within 5-7 working days."}`,
+                is_read: false
             });
         }
-        fetch(`${process.env.SS_HOST}/api/order/accept-order`, {
-            cache: "no-store",
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Pass-Code": process.env.PASS_CODE
-            },
-            body: JSON.stringify({ _id: order._id, status: order.status, active: order.active, ready_by: order.ready_by, cooking_inst_status: order.cooking_inst_status, userId: order.user })
-        });
+        sendEventToSocketServer("/api/order/accept-order", { _id: order._id, status: order.status, active: order.active, ready_by: order.ready_by, cooking_inst_status: order.cooking_inst_status, userId: order.user });
         return NextResponse.json({ ok: true, message: accepted ? "Order accepted" : "Order rejected" }, { status: 200 });
     }
     catch (err) {

@@ -9,16 +9,17 @@ import { mongoConnect } from "@/config/moongose";
 
 // Function to generate a random 6-digit number
 function generateRandomNumber() {
-    const num=Math.floor(100000 + Math.random() * 900000);
+    const num = Math.floor(100000 + Math.random() * 900000);
     return String(num);
 }
 
 export async function POST(request) {
     try {
+        return NextResponse.json({ ok: false, message: "This feature is removed due to security reason." }, { status: 400 });
         const body = await request.json();
         body.email = body.email.trim();
-        if(body.email==""){
-            return NextResponse.json({ok:false,message:"Enter valid input"},{status:400});
+        if (body.email == "") {
+            return NextResponse.json({ ok: false, message: "Enter valid input" }, { status: 400 });
         }
         // await mongoose.connect(process.env.MONGO_URL);
         await mongoConnect();
