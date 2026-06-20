@@ -10,6 +10,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { notificatioCountAtom } from '@/store/notificationCountAtom';
 
 export default function SocketComponent() {
+    if (!process.env.NEXT_PUBLIC_SS_HOST) {
+        return null;
+    }
     const session = useRecoilValue(sessionAtom);
     if (!session) {
         return null;
