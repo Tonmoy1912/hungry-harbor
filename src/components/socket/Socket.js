@@ -31,7 +31,7 @@ function SocketComponentInternal() {
         //generating socket server origin
         // let socketOrigin = window.origin.substring(0, window.origin.lastIndexOf(":") + 1) + "8000";
         // const socket = io(socketOrigin);
-        const socket = io("https://hungryharborss.tonmoy1912.in");
+        const socket = io(process.env.NEXT_PUBLIC_SS_HOST);
 
         socket.on("connect", () => {
             console.log(`Socket connection established with server with socket id ${socket.id} .`); // x8WIv7-mJelg7on_ALbx
