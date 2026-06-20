@@ -10,7 +10,6 @@ import { itemUpdateSync } from "@/util/item_update_sync";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 import { sendEventToSocketServer } from "@/util/send_event";
 import { mongoConnect } from "@/config/moongose";
-import transporter from "@/config/nodemailer-config";
 
 //always send status=ok and status code=200 to convince the razorpay server that our server is running..
 
@@ -90,13 +89,13 @@ export async function POST(request) {
         db_session = null;
         sendEventToSocketServer("/api/order/new-order", { _id: orderData._id });
         //for test mode.............................................................................................................................................
-        transporter.sendMail({
-            from: 'Hungry Harbor', // sender address
-            to: "tonmoybiswas19122002@gmail.com", // list of receivers
-            subject: "New order.", // Subject line
-            // text: "Hello world?", // plain text body
-            html: `<b>A New Order Recieved. </b>`, // html body
-        });
+        // transporter.sendMail({
+        //     from: 'Hungry Harbor', // sender address
+        //     to: "tonmoybiswas19122002@gmail.com", // list of receivers
+        //     subject: "New order.", // Subject line
+        //     // text: "Hello world?", // plain text body
+        //     html: `<b>A New Order Recieved. </b>`, // html body
+        // });
         //.........................................................................................................................................................
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
     }
