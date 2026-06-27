@@ -15,7 +15,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export function AddItemButton() {
     const [show, setShow] = useState(false);
-    const defaultImageUrl = "https://firebasestorage.googleapis.com/v0/b/hungryharbor-412214.appspot.com/o/items%2Fimage-not-found.png?alt=media&token=4eedd79c-8d24-4a5f-a505-1dd3f28fbc4d";
+    const defaultImageUrl = "https://hungryharbor.blob.core.windows.net/public/no-image.jpg";
 
     return (
         <Fragment>
