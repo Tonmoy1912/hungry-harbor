@@ -13,28 +13,28 @@ const userSchema = new mongoose.Schema({
         type: String,
         require: true
     },
-    phone:{
-        type:String,
-        default:""
+    phone: {
+        type: String,
+        default: ""
     },
-    address:{
-        type:String,
-        default:""
+    address: {
+        type: String,
+        default: ""
     },
     date: {
         type: Date,
         default: Date.now
     },
-    total_order:{
+    total_order: {
         type: Number,
-        default:0
+        default: 0
     },
-    avatar:{
-        type:String,
-        default:"https://firebasestorage.googleapis.com/v0/b/hungryharbor-412214.appspot.com/o/profile%2Fdefault-profile.png?alt=media&token=6de54cec-1899-498b-b0ec-9a1c1d2cbfb0"
+    avatar: {
+        type: String,
+        default: "https://hungryharbor.blob.core.windows.net/public/Profile.png"
     }
 });
 
-const Users=mongoose.models.users || mongoose.model("users",userSchema);
+const Users = mongoose.models.users || mongoose.model("users", userSchema);
 
 export default Users;

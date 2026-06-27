@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { StopProgress } from '@/components/util/util';
 
 export default function page() {
-  const { data, status} = useQuery({
+  const { data, status } = useQuery({
     queryKey: [`profile-page-data`],
     queryFn: async function () {
       let userData = await fetch("/api/auth/user-info");
@@ -18,7 +18,7 @@ export default function page() {
       return userData.userData;
     },
     placeholderData: {
-      avatar: "https://firebasestorage.googleapis.com/v0/b/hungryharbor-412214.appspot.com/o/profile%2Fdefault-profile.png?alt=media&token=6de54cec-1899-498b-b0ec-9a1c1d2cbfb0",
+      avatar: "https://hungryharbor.blob.core.windows.net/public/Profile.png",
       name: "Loading...",
       email: "Loading...",
       phone: "Loading...",
@@ -27,11 +27,11 @@ export default function page() {
     staleTime: 10 * 60 * 1000
   });
 
-  const [dataState, setDataState] = useState({...data});
+  const [dataState, setDataState] = useState({ ...data });
   const setNoti = useSetRecoilState(notiAtom);
 
   useEffect(() => {
-    setDataState({...data});
+    setDataState({ ...data });
     // console.log("fetched data",data);
   }, [data]);
 
@@ -47,7 +47,7 @@ export default function page() {
 
   return (
     <div className='w-full flex flex-col gap-6 justify-start items-center p-6 bg-slate-300 '>
-      <StopProgress/>
+      <StopProgress />
       <div className='p-5 w-11/12 flex flex-col gap-4 justify-center items-center self-center py-6 bg-blue-500 rounded-lg shadow-lg shadow-blue-600'>
         <Image priority={true} src={data.avatar} height={200} width={200} alt='user profile' className='rounded-full h-40 w-40'></Image>
         <Link href={"/profile/change-password"} className='px-1 border border-black text-sm bg-slate-300 text-black'>Change Password</Link>
@@ -55,16 +55,16 @@ export default function page() {
 
       <div className='w-11/12 p-3 md:p-8 flex flex-col gap-5 bg-blue-300 rounded-lg shadow-lg shadow-blue-400'>
 
-        <InputField type="input" data={dataState} name={"name"} fieldName={"Name"} handleChange={handleChange} setNoti={setNoti} queryData={data} setDataState={setDataState}/>
+        <InputField type="input" data={dataState} name={"name"} fieldName={"Name"} handleChange={handleChange} setNoti={setNoti} queryData={data} setDataState={setDataState} />
 
         <div className='pb-4  border-b border-b-slate-600'>
           <h1 className='py-2 text-xl text-black font-semibold'>Email</h1>
           <input className='p-0.5 rounded-sm bg-slate-300 ' type="text" value={data.email} disabled={true} />
         </div>
 
-        <InputField type="input" data={dataState} name={"phone"} fieldName={"Phone"} handleChange={handleChange} setNoti={setNoti} queryData={data} setDataState={setDataState}/>
+        <InputField type="input" data={dataState} name={"phone"} fieldName={"Phone"} handleChange={handleChange} setNoti={setNoti} queryData={data} setDataState={setDataState} />
 
-        <InputField type="textarea" data={dataState} name={"address"} fieldName={"Address"} handleChange={handleChange} setNoti={setNoti} queryData={data} setDataState={setDataState}/>
+        <InputField type="textarea" data={dataState} name={"address"} fieldName={"Address"} handleChange={handleChange} setNoti={setNoti} queryData={data} setDataState={setDataState} />
 
       </div>
 
@@ -74,7 +74,7 @@ export default function page() {
 }
 
 
-function InputField({ data, type, fieldName, name, handleChange, setNoti,queryData,setDataState }) {
+function InputField({ data, type, fieldName, name, handleChange, setNoti, queryData, setDataState }) {
 
   const [disabled, setDisabled] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -85,8 +85,8 @@ function InputField({ data, type, fieldName, name, handleChange, setNoti,queryDa
     mutationKey: [`profile-${name}`],
     onSuccess: () => {
       // Invalidate and refetch
-      setTimeout(()=>{queryClient.invalidateQueries({ queryKey: [`profile-page-data`] });},1000);
-      
+      setTimeout(() => { queryClient.invalidateQueries({ queryKey: [`profile-page-data`] }); }, 1000);
+
     },
   });
 
@@ -100,11 +100,11 @@ function InputField({ data, type, fieldName, name, handleChange, setNoti,queryDa
     setDisabled(true);
     setProcessing(true);
     // const prevUser=dataState;
-    if(!data[name]||data[name]==""){
+    if (!data[name] || data[name] == "") {
       setNoti({ type: "Failed", message: "Enter valid input", show: true });
       setProcessing(false);
-      setDataState({...queryData});
-      return ;
+      setDataState({ ...queryData });
+      return;
     }
     fetch("/api/auth/update-userinfo", {
       cache: "no-store",
@@ -118,8 +118,8 @@ function InputField({ data, type, fieldName, name, handleChange, setNoti,queryDa
       .then(data => {
         setProcessing(false);
         setNoti({ type: `${data.ok ? "Success" : "Failed"}`, message: data.message, show: true });
-        if(!data.ok){
-          setDataState({...queryData});
+        if (!data.ok) {
+          setDataState({ ...queryData });
         }
       })
       .catch(err => {
