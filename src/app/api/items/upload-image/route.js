@@ -13,7 +13,10 @@ const ALLOWED_TYPES = new Set([
 
 export async function POST(req) {
     try {
-        // return NextResponse.json({ ok: true, message: "Hello world" }, { status: 200 });
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user.isAdmin) {
+            return NextResponse.json({ ok: false, message: "Unauthorized..!", type: "Failed" }, { status: 400 });
+        }
         const formData = await req.formData();
 
         const file = formData.get("file");

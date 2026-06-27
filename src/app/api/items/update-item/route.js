@@ -5,8 +5,7 @@ import mongoose from "mongoose";
 import Categories from "@/models/category/categorySchema";
 import Items from "@/models/item/itemSchema";
 import { z } from "zod";
-import { initializeApp } from "firebase/app";
-import { getStorage,ref, deleteObject } from "firebase/storage";
+import { deleteBlob } from "@/util/azure_blob_utils";
 import { mongoConnect } from "@/config/moongose";
 
 export async function POST(request) {
@@ -63,36 +62,22 @@ export async function POST(request) {
             await prev_category.save();
         }
         await db_session.commitTransaction();
-        db_session=null;
+        db_session = null;
         //put inside db transaction............................
         if (prev_image != image && prev_image != process.env.NOT_FOUND_IMAGE) {
-            
-                const firebaseConfig = {
-                    apiKey: process.env.FIREBASE_APIKEY,
-                    authDomain: process.env.FIREBASE_AUTHDOMAIN,
-                    projectId: process.env.FIREBASE_PROJECTID,
-                    storageBucket: process.env.FIREBASE_STORAGEBUCKET,
-                    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDERID,
-                    appId: process.env.FIREBASE_APPID,
-                    measurementId: process.env.FIREBASE_MEASUREMENTID
-                };
-                // Initialize Firebase
-                const app = initializeApp(firebaseConfig);
-                const storage = getStorage(app);
-                let imageRef=ref(storage,prev_image);
-                await deleteObject(imageRef);
+            await deleteBlob(prev_image);
         }
 
         return NextResponse.json({ ok: true, message: "Item Updated successfully", item: updationInfo, type: "Success" }, { status: 200 });
     }
     catch (err) {
-        try{
-            if(db_session){
+        try {
+            if (db_session) {
                 db_session.abortTransaction();
             }
         }
-        finally{
-            return NextResponse.json({ok:false,message:err.message,type:"Failed"},{status:400});
+        finally {
+            return NextResponse.json({ ok: false, message: err.message, type: "Failed" }, { status: 400 });
         }
     }
 }

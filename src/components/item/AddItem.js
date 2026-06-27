@@ -8,8 +8,7 @@ import { useRecoilState, useRecoilStateLoadable, useSetRecoilState } from 'recoi
 import { categoryAtom } from '@/store/categoryAtom';
 import { notiAtom } from '@/store/notiState';
 import { progressAtom } from '@/store/progressAtom';
-import { getFirebaseStorage } from '@/config/firebase';
-import { ref, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage";
+import { uploadImageClient, deleteImageClient } from '@/util/image_helper';
 import { v4 } from 'uuid';
 import { z } from "zod";
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,11 +34,11 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
     const [price, setPrice] = useState(defaultPrice);
     const [categoriesState, setCateoriesState] = useRecoilStateLoadable(categoryAtom);
     const setNoti = useSetRecoilState(notiAtom);
-    const [progressState,setProgressState] = useRecoilState(progressAtom);
-    const [in_stock,setInStock]=useState(defaultInStock);
-    const [global_order,setGlobalOrder]=useState(defaultGlobalOrder);
-    const [category_order,setCategoryOrder]=useState(defaultCategoryOrder);
-    const queryClient=useQueryClient();
+    const [progressState, setProgressState] = useRecoilState(progressAtom);
+    const [in_stock, setInStock] = useState(defaultInStock);
+    const [global_order, setGlobalOrder] = useState(defaultGlobalOrder);
+    const [category_order, setCategoryOrder] = useState(defaultCategoryOrder);
+    const queryClient = useQueryClient();
 
     function fileChangeHandler(e) {
         if (e.target.files.length > 0) {
@@ -60,7 +59,7 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
         setShow(false);
     }
 
-    useEffect(()=>{
+    useEffect(() => {
         setFile(null);
         setName(defaultName);
         setImage(defaultUrl);
@@ -70,7 +69,7 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
         setInStock(defaultInStock);
         setGlobalOrder(defaultGlobalOrder);
         setCategoryOrder(defaultCategoryOrder);
-    },[show]);
+    }, [show]);
 
     async function AddHandler(e) {
         e.stopPropagation();
@@ -78,84 +77,78 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
         setProgressState(true);
         try {
             let newImgaeUrl;
-            const BodySchema=z.object({
-                name:z.string().trim().min(1),
-                description:z.string().trim(),
-                price:z.coerce.number().int().nonnegative(),
-                category:z.string().trim().min(1).toUpperCase(),
-                in_stock:z.coerce.number().int().nonnegative(),
-                global_order:z.coerce.number().int().nonnegative(),
-                category_order:z.coerce.number().int().nonnegative()
+            const BodySchema = z.object({
+                name: z.string().trim().min(1),
+                description: z.string().trim(),
+                price: z.coerce.number().int().nonnegative(),
+                category: z.string().trim().min(1).toUpperCase(),
+                in_stock: z.coerce.number().int().nonnegative(),
+                global_order: z.coerce.number().int().nonnegative(),
+                category_order: z.coerce.number().int().nonnegative()
             });
-            const parsedBody=BodySchema.safeParse({name,category,description,price,in_stock,global_order,category_order});
+            const parsedBody = BodySchema.safeParse({ name, category, description, price, in_stock, global_order, category_order });
             // console.log("parsed body",parsedBody);
             // return ;
-            if(!parsedBody.success){
-                setNoti({message:"Enter valid input",type:"Failed",show:true});
+            if (!parsedBody.success) {
+                setNoti({ message: "Enter valid input", type: "Failed", show: true });
                 setProgressState(false);
-                return ;
+                return;
             }
-            let flag=true;
-            for(let i of categoriesState.contents){
-                if(i.category==category && category!="ALL"){
-                    flag=false;
+            let flag = true;
+            for (let i of categoriesState.contents) {
+                if (i.category == category && category != "ALL") {
+                    flag = false;
                     break;
                 }
             }
 
-            if(flag){
-                setNoti({message:"Enter valid category",type:"Failed",show:true});
+            if (flag) {
+                setNoti({ message: "Enter valid category", type: "Failed", show: true });
                 setProgressState(false);
-                return ;
+                return;
             }
-            let imageRef=null,storage=null;
+            let uploadedImageUrl = null;
             if (file) {
-                storage = await getFirebaseStorage();
-                imageRef = ref(storage, `items/${file.name + v4()}`);
-                const snapshot = await uploadBytes(imageRef, file);
-                const url = await getDownloadURL(snapshot.ref);
-                newImgaeUrl=url;
+                uploadedImageUrl = await uploadImageClient(file);
+                newImgaeUrl = uploadedImageUrl;
             }
-            else{
-                newImgaeUrl=image;
+            else {
+                newImgaeUrl = image;
             }
-            let res=await fetch("/api/items/add-item",{
-                cache:"no-store",
-                method:"POST",
+            let res = await fetch("/api/items/add-item", {
+                cache: "no-store",
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body:JSON.stringify({name,image:newImgaeUrl,category,description,price,in_stock,global_order,category_order})
+                body: JSON.stringify({ name, image: newImgaeUrl, category, description, price, in_stock, global_order, category_order })
             });
-            res=await res.json();
-            if(res.ok){
-                setCateoriesState(prev=>{
-                    let newList=prev.map(x=>{
-                        if(x.category=="ALL" || x.category==category){
-                            return {...x,total:x.total+1}
+            res = await res.json();
+            if (res.ok) {
+                setCateoriesState(prev => {
+                    let newList = prev.map(x => {
+                        if (x.category == "ALL" || x.category == category) {
+                            return { ...x, total: x.total + 1 }
                         }
-                        else{
+                        else {
                             return x;
                         }
                     });
                     return newList;
                 })
                 // setProgressState(false);
-                queryClient.invalidateQueries({queryKey:["all-items"]})
-                setNoti({message:res.message,type:res.type,show:true});
+                queryClient.invalidateQueries({ queryKey: ["all-items"] })
+                setNoti({ message: res.message, type: res.type, show: true });
                 setShow(false);
                 cancelHandler();
             }
-            else{
+            else {
                 //item not added
                 //hence delete the uploaded image
-                if(file){
-                    deleteObject(imageRef);
-                    // .then(()=>console.log("File declearleted successfully"))
-                    // .catch((err)=>console.log(err.message));
-                    // setProgressState(false);
+                if (file) {
+                    deleteImageClient(uploadedImageUrl);
                 }
-                setNoti({message:res.message,type:res.type,show:true});
+                setNoti({ message: res.message, type: res.type, show: true });
             }
             setProgressState(false);
         }
@@ -189,7 +182,7 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
                         ease: [0, 0.71, 0.2, 1.01]
                     }}
                     className='z-50 fixed top-0 left-0 h-screen w-screen flex justify-center items-center backdrop-blur-sm'
-                    // onClick={() => { cancelHandler() }}
+                // onClick={() => { cancelHandler() }}
                 >
 
                     <motion.div
@@ -259,7 +252,7 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
                             <h1 className='font-bold text-lg text-black'>Global Order</h1>
                             <input type="number" placeholder='Enter global order' className='p-0.5 w-full rounded-md border border-blue-800' value={global_order} onChange={(e) => { setGlobalOrder(e.target.value) }} />
                         </div>
-                        
+
                         <div className='flex flex-col justify-start items-start w-5/6 gap-1'>
                             <h1 className='font-bold text-lg text-black'>Categorical Order</h1>
                             <input type="number" placeholder='Enter categorical order' className='p-0.5 w-full rounded-md border border-blue-800' value={category_order} onChange={(e) => { setCategoryOrder(e.target.value) }} />
@@ -267,9 +260,9 @@ export function AddItemInput({ show, setShow, defaultName, defaultUrl, defaultCa
 
                         <div className='flex justify-center items-center p-2 gap-4'>
                             {
-                                progressState?
-                                (<button className='px-2 py-1 rounded-md bg-blue-700 text-white font-semibold animate-pulse' disabled={true} >Processing...</button>) :
-                            (<button className='px-2 py-1 rounded-md bg-green-700 text-white font-semibold' onClick={AddHandler}>Add</button>)
+                                progressState ?
+                                    (<button className='px-2 py-1 rounded-md bg-blue-700 text-white font-semibold animate-pulse' disabled={true} >Processing...</button>) :
+                                    (<button className='px-2 py-1 rounded-md bg-green-700 text-white font-semibold' onClick={AddHandler}>Add</button>)
                             }
                             <button className='px-2 py-1 rounded-md bg-slate-200 text-black font-semibold border border-black' onClick={(e) => { e.stopPropagation(); cancelHandler(); }}>Cancel</button>
                         </div>

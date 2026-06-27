@@ -6,6 +6,10 @@ import { deleteBlob } from "@/util/azure_blob_utils";
 
 export async function POST(req) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user.isAdmin) {
+            return NextResponse.json({ ok: false, message: "Unauthorized..!", type: "Failed" }, { status: 400 });
+        }
         const body = await req.json();
         const { url } = body;
         if (!url || typeof url !== "string") {

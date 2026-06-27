@@ -35,6 +35,9 @@ export async function uploadImage(file) {
 }
 
 export async function deleteBlob(imageUrl) {
+    if (!imageUrl) {
+        return;
+    }
     const blobName = imageUrl.split("/").pop();
     const blockBlobClient =
         containerClient.getBlockBlobClient(blobName);

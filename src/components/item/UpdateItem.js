@@ -9,8 +9,7 @@ import { useRecoilState, useRecoilStateLoadable, useSetRecoilState } from 'recoi
 import { categoryAtom } from '@/store/categoryAtom';
 import { notiAtom } from '@/store/notiState';
 import { progressAtom } from '@/store/progressAtom';
-import { getFirebaseStorage } from '@/config/firebase';
-import { ref, getDownloadURL, uploadBytes, deleteObject } from "firebase/storage";
+import { uploadImageClient, deleteImageClient } from '@/util/image_helper';
 import { v4 } from 'uuid';
 import { z } from "zod";
 import { useQueryClient } from '@tanstack/react-query';
@@ -153,13 +152,10 @@ export function UpdateItemInputInside({ show, setShow, inputField }) {
                 setProgressState(false);
                 return;
             }
-            let imageRef = null, storage = null;
+            let uploadedImageUrl = null;
             if (file) {
-                storage = await getFirebaseStorage();
-                imageRef = ref(storage, `items/${file.name + v4()}`);
-                const snapshot = await uploadBytes(imageRef, file);
-                const url = await getDownloadURL(snapshot.ref);
-                newImgaeUrl = url;
+                uploadedImageUrl = await uploadImageClient(file);
+                newImgaeUrl = uploadedImageUrl;
             }
             else {
                 newImgaeUrl = image;
@@ -200,10 +196,7 @@ export function UpdateItemInputInside({ show, setShow, inputField }) {
                 //item not added
                 //hence delete the uploaded image
                 if (file) {
-                    deleteObject(imageRef);
-                    // .then(()=>console.log("File deleted successfully"))
-                    // .catch((err)=>console.log(err.message));
-                    // setProgressState(false);
+                    deleteImageClient(uploadedImageUrl);
                 }
                 setNoti({ message: res.message, type: res.type, show: true });
             }
