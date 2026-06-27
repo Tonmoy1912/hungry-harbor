@@ -1,57 +1,57 @@
 import mongoose from "mongoose";
 
 export const itemSchema = new mongoose.Schema({
-    name:{
-        type:String,
-        require:true
-    },
-    image:{
+    name: {
         type: String,
-        default:"https://firebasestorage.googleapis.com/v0/b/hungryharbor-412214.appspot.com/o/items%2Fimage-not-found.png?alt=media&token=4eedd79c-8d24-4a5f-a505-1dd3f28fbc4d",
-        require:true
+        require: true
     },
-    description:{
+    image: {
+        type: String,
+        default: "https://hungryharbor.blob.core.windows.net/public/no-image.jpg",
+        require: true
+    },
+    description: {
         type: String
     },
-    price:{
-        type:Number,
-        require:true
+    price: {
+        type: Number,
+        require: true
     },
-    category:{
+    category: {
         type: String,
-        require:true
+        require: true
     },
-    date:{
+    date: {
         type: Date,
         default: Date.now
     },
-    removed:{
-        type:Boolean,
-        default:false
+    removed: {
+        type: Boolean,
+        default: false
     },
-    category_order:{
-        type:Number,
-        default:1000
+    category_order: {
+        type: Number,
+        default: 1000
     },
-    global_order:{
-        type:Number,
-        default:1000
+    global_order: {
+        type: Number,
+        default: 1000
     },
-    in_stock:{
-        type:Number,
-        default:0
+    in_stock: {
+        type: Number,
+        default: 0
     },
-    total_review:{
-        type:Number,
-        default:0
+    total_review: {
+        type: Number,
+        default: 0
     },
-    rating:{
+    rating: {
         type: Number,
         default: 0.0
     }
 });
 
-const Items=mongoose.models.items || mongoose.model("items",itemSchema);
+const Items = mongoose.models.items || mongoose.model("items", itemSchema);
 
 export default Items;
 
