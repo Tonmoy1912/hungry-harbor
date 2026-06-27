@@ -4,7 +4,8 @@ export async function uploadImageClient(file) {
     formData.append("file", file);
     const res = await fetch("/api/items/upload-image", {
         method: "POST",
-        body: formData
+        body: formData,
+        cache: "no-store"
     });
     const data = await res.json();
     if (!data.ok) {
@@ -20,7 +21,8 @@ export async function deleteImageClient(url) {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ url })
+        body: JSON.stringify({ url }),
+        cache: "no-store"
     });
     return;
 }
