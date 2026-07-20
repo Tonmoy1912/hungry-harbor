@@ -10,11 +10,13 @@ import { itemUpdateSync } from "@/util/item_update_sync";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 import { sendEventToSocketServer } from "@/util/send_event";
 import { mongoConnect } from "@/config/moongose";
+import semaphoreForItem from "@/concurrency-control/semaphores/semaphoreForItem";
 
 //always send status=ok and status code=200 to convince the razorpay server that our server is running..
 
 export async function POST(request) {
     let db_session = null;
+    let isLocked = false;
     try {
         // console.log("payment captured api called");
         const razorpaySignature = headers().get('x-razorpay-signature');
@@ -39,6 +41,12 @@ export async function POST(request) {
 
         //first mark the order as paid
         await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true, active: "settled", status: "cancelled" } });
+
+        isLocked = await semaphoreForItem.acquire();
+
+        if (!isLocked) {
+            return NextResponse.json({ ok: false, message: "Failed to acquire the lock" }, { status: 429 });
+        }
 
         db_session = await mongoose.startSession();
         db_session.startTransaction();
@@ -85,6 +93,8 @@ export async function POST(request) {
         orderData.status = "pending";
         await orderData.save();
         await db_session.commitTransaction();
+        semaphoreForItem.release();
+        isLocked = false;
         itemUpdateSync();
         db_session = null;
         sendEventToSocketServer("/api/order/new-order", { _id: orderData._id });
@@ -105,9 +115,12 @@ export async function POST(request) {
             if (db_session) {
                 db_session.abortTransaction();
             }
+            if (isLocked) {
+                semaphoreForItem.release();
+            }
         }
         finally {
-            return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
+            return NextResponse.json({ ok: false, status: "ok" }, { status: 500 });
         }
     }
 }

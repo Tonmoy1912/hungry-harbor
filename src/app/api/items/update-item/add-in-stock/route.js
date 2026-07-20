@@ -7,9 +7,11 @@ import Items from "@/models/item/itemSchema";
 import { z } from "zod";
 import { itemUpdateSync } from "@/util/item_update_sync";
 import { mongoConnect } from "@/config/moongose";
+import semaphoreForItem from "@/concurrency-control/semaphores/semaphoreForItem";
 
 export async function POST(request) {
     let db_session=null;
+    let isLocked=false;
     try {
         const session = await getServerSession(authOptions);
         if (!session || !session.user.isAdmin) {
@@ -28,7 +30,10 @@ export async function POST(request) {
         let { id, add_stock } = parsedBody.data;
         // await mongoose.connect(process.env.MONGO_URL);
         await mongoConnect();
-
+        isLocked=await semaphoreForItem.acquire();
+        if(!isLocked){
+            return NextResponse.json({ok:false,message:"Failed to acquire the lock"},{status:429});
+        }
 
         //put inside db transaction............................
         db_session=await mongoose.startSession();
@@ -46,8 +51,11 @@ export async function POST(request) {
         item.in_stock=cur_stock+add_stock;
         await item.save();
         await db_session.commitTransaction();
+        db_session=null;
         //put inside db transaction............................
 
+        semaphoreForItem.release();
+        isLocked=false;
         itemUpdateSync();
         return NextResponse.json({ ok: true, message: "Stocks added successfully", type: "Success" }, { status: 200 });
     }
@@ -55,6 +63,9 @@ export async function POST(request) {
         try{
             if(db_session){
                 db_session.abortTransaction();
+            }
+            if(isLocked){
+                semaphoreForItem.release();
             }
         }
         finally{
