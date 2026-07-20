@@ -63,7 +63,7 @@ export async function POST(request) {
             }
         }
         finally{
-            return NextResponse.json({ok:false,status:"ok"},{status:200});
+            return NextResponse.json({ok:false,status:"ok"},{status:500});
         }
     }
 }

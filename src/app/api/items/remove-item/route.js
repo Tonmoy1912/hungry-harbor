@@ -5,9 +5,11 @@ import mongoose from "mongoose";
 import Categories from "@/models/category/categorySchema";
 import Items from "@/models/item/itemSchema";
 import { mongoConnect } from "@/config/moongose";
+import semaphoreForItem from "@/concurrency-control/semaphores/semaphoreForItem";
 
 export async function POST(request){
     let db_session=null;
+    let isLocked=false;
     try{
         const session=await getServerSession(authOptions);
         if(!session || !session.user.isAdmin){
@@ -18,6 +20,10 @@ export async function POST(request){
         name=name.trim();
         // await mongoose.connect(process.env.MONGO_URL);
         await mongoConnect();
+        isLocked=await semaphoreForItem.acquire();
+        if(!isLocked){
+            return NextResponse.json({ok:false,message:"Failed to acquire the lock"},{status:429});
+        }
         db_session=await mongoose.startSession();
         db_session.startTransaction();
         let db_item=await Items.findOne({name,removed:false}).select({name:1,removed:1,category:1,in_stock:1}).session(db_session);
@@ -33,12 +39,18 @@ export async function POST(request){
         await db_category.save();
         await db_item.save();
         await db_session.commitTransaction();
+        db_session=null;
+        semaphoreForItem.release();
+        isLocked=false;
         return NextResponse.json({ok:true,message:"Item removed successfully",type:"Success"},{status:200});
     }
     catch(err){
         try{
             if(db_session){
                 db_session.abortTransaction();
+            }
+            if(isLocked){
+                semaphoreForItem.release();
             }
         }
         finally{

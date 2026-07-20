@@ -7,9 +7,11 @@ import Items from "@/models/item/itemSchema";
 import { z } from "zod";
 import { deleteBlob } from "@/util/azure_blob_utils";
 import { mongoConnect } from "@/config/moongose";
+import semaphoreForItem from "@/concurrency-control/semaphores/semaphoreForItem";
 
 export async function POST(request) {
     let db_session = null;
+    let isLocked = false;
     try {
         const session = await getServerSession(authOptions);
         if (!session || !session.user.isAdmin) {
@@ -35,7 +37,10 @@ export async function POST(request) {
         let { id, name, image, description, price, category, in_stock, global_order, category_order } = parsedBody.data;
         // await mongoose.connect(process.env.MONGO_URL);
         await mongoConnect();
-
+        isLocked = await semaphoreForItem.acquire();
+        if (!isLocked) {
+            return NextResponse.json({ ok: false, message: "Failed to acquire the lock" }, { status: 429 });
+        }
 
         //put inside db transaction............................
         db_session = await mongoose.startSession();
@@ -63,6 +68,8 @@ export async function POST(request) {
         }
         await db_session.commitTransaction();
         db_session = null;
+        semaphoreForItem.release();
+        isLocked = false;
         //put inside db transaction............................
         if (prev_image != image && prev_image != process.env.NOT_FOUND_IMAGE) {
             await deleteBlob(prev_image);
@@ -74,6 +81,9 @@ export async function POST(request) {
         try {
             if (db_session) {
                 db_session.abortTransaction();
+            }
+            if (isLocked) {
+                semaphoreForItem.release();
             }
         }
         finally {
