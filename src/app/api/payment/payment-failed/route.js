@@ -1,69 +1,69 @@
 import { NextResponse } from "next/server";
 import Items from "@/models/item/itemSchema";
 import mongoose from "mongoose";
-import Users from "@/models/user/userSchema";
 import Orders from "@/models/order/orderSchema";
 import { headers } from "next/headers";
 import { createHmac } from "crypto";
 import { mongoConnect } from "@/config/moongose";
-
-//always send status=ok and status code=200 to convince the razorpay server that our server is running..
+import { itemUpdateSync } from "@/util/item_update_sync";
 
 export async function POST(request) {
     let db_session = null;
     try {
-        // console.log("payment failed api called");
         const razorpaySignature = headers().get('x-razorpay-signature');
-        const body=await request.json();
+        const body = await request.json();
         const shasum = createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET);
         shasum.update(JSON.stringify(body));
         const digest = shasum.digest('hex');
-        if(digest!=razorpaySignature){
-            // console.log("returned due to validation failed");
-            return NextResponse.json({ok:true,status:"ok"},{status:200});
+
+        if (digest !== razorpaySignature) {
+            return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
         }
-        //the request is made from Razorpay..
-        //Now write the backend logic
-        const {id:payment_id, order_id}=body.payload.payment.entity;
-        // console.log("payment id:",payment_id);
-        // console.log("order id:",order_id);
-        // await mongoose.connect(process.env.MONGO_URL);
+
+        const { id: payment_id, order_id } = body.payload.payment.entity;
+
         await mongoConnect();
-        db_session=await mongoose.startSession();
+        db_session = await mongoose.startSession();
         db_session.startTransaction();
-        const orderData = await Orders.findOne({ orderId: order_id, paid:false, payment_failed:false }).select({items:0}).session(db_session);
-        // console.log("orderData",orderData);
-        if(!orderData){
+
+        const orderData = await Orders.findOne({ orderId: order_id, paid: false }).session(db_session);
+        if (!orderData || orderData.active === "failed" || orderData.active === "expired") {
             await db_session.abortTransaction();
-            return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
+            db_session.endSession();
+            return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
         }
-        // const items=orderData.items;
-        //add the ordered items back to stock
-        // for(let x of items){
-        //     let dbItem = await Items.findById(x.item._id).select({ in_stock: 1 }).session(db_session);
-        //     if(dbItem){
-        //         dbItem.in_stock+=x.quantity;
-        //         await dbItem.save();
-        //     }
-        // }
-        // await Orders.deleteOne({orderId:order_id});
+
+        // Restore reserved item stock
+        for (let x of orderData.items) {
+            await Items.findByIdAndUpdate(
+                x.item,
+                { $inc: { in_stock: x.quantity } },
+                { session: db_session }
+            );
+        }
+
         orderData.paymentId = payment_id;
         orderData.paid = false;
         orderData.payment_failed = true;
-        await orderData.save();
+        orderData.active = "failed";
+        orderData.status = "cancelled";
+        orderData.expiresAt = null;
+
+        await orderData.save({ session: db_session });
         await db_session.commitTransaction();
-        db_session=null;
+        db_session.endSession();
+        db_session = null;
+
+        itemUpdateSync();
+
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
-    }
-    catch (err) {
-        // console.log("error in payment failed",err);
-        try{
-            if(db_session){
-                db_session.abortTransaction();
-            }
+    } catch (err) {
+        if (db_session) {
+            try {
+                await db_session.abortTransaction();
+                db_session.endSession();
+            } catch (_) {}
         }
-        finally{
-            return NextResponse.json({ok:false,status:"ok"},{status:500});
-        }
+        return NextResponse.json({ ok: false, status: "ok", error: err.message }, { status: 500 });
     }
 }

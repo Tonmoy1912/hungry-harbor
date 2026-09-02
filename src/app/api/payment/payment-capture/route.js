@@ -1,126 +1,93 @@
 import { NextResponse } from "next/server";
-import Items from "@/models/item/itemSchema";
-import mongoose from "mongoose";
-import Users from "@/models/user/userSchema";
-import Orders from "@/models/order/orderSchema";
 import { headers } from "next/headers";
 import { createHmac } from "crypto";
 import Razorpay from "razorpay";
+import Orders from "@/models/order/orderSchema";
 import { itemUpdateSync } from "@/util/item_update_sync";
 import { sendNotiToSocketServerAndSave } from "@/util/send_notification";
 import { sendEventToSocketServer } from "@/util/send_event";
 import { mongoConnect } from "@/config/moongose";
-import semaphoreForItem from "@/concurrency-control/semaphores/semaphoreForItem";
 
-//always send status=ok and status code=200 to convince the razorpay server that our server is running..
-
+// Always send status=ok and status code=200/500 as per webhook requirements
 export async function POST(request) {
-    let db_session = null;
-    let isLocked = false;
     try {
-        // console.log("payment captured api called");
         const razorpaySignature = headers().get('x-razorpay-signature');
         const body = await request.json();
-        // console.log("body",body);
+
+        // 1. Verify Razorpay Webhook HMAC Signature
         const shasum = createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET);
         shasum.update(JSON.stringify(body));
         const digest = shasum.digest('hex');
-        if (digest != razorpaySignature) {
-            // console.log("returned due to validation failed");
-            // console.log("digest",digest);
-            // console.log("razorpaySignature",razorpaySignature);
-            return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
+
+        if (digest !== razorpaySignature) {
+            return NextResponse.json({ ok: false, status: "invalid_signature" }, { status: 200 });
         }
-        //the request is made from Razorpay..
-        //Now write the backend logic
+
         const { id: payment_id, order_id } = body.payload.payment.entity;
-        // console.log("payment id:", payment_id);
-        // console.log("order id:", order_id);
-        // await mongoose.connect(process.env.MONGO_URL);
+
         await mongoConnect();
 
-        //first mark the order as paid
-        await Orders.updateOne({ orderId: order_id }, { $set: { paymentId: payment_id, paid: true, active: "settled", status: "cancelled" } });
-
-        isLocked = await semaphoreForItem.acquire();
-
-        if (!isLocked) {
-            return NextResponse.json({ ok: false, message: "Failed to acquire the lock" }, { status: 429 });
-        }
-
-        db_session = await mongoose.startSession();
-        db_session.startTransaction();
-
-        const orderData = await Orders.findOne({ orderId: order_id }).session(db_session);
+        // 2. Find the initialized order
+        const orderData = await Orders.findOne({ orderId: order_id });
         if (!orderData) {
-            return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
+            return NextResponse.json({ ok: false, status: "order_not_found" }, { status: 200 });
         }
-        const items = orderData.items;
-        let in_stock = true;
-        for (let x of items) {
-            let dbItem = await Items.findById(x.item).select({ in_stock: 1, price: 1 }).session(db_session);
-            if (!dbItem || dbItem.in_stock < x.quantity) {
-                //issue refund....
-                in_stock = false;
-                break;
-            }
-            else {
-                dbItem.in_stock -= x.quantity;
-                await dbItem.save();
-            }
+
+        // 3. Idempotency Check: Already paid and active
+        if (orderData.paid && orderData.active === "active") {
+            return NextResponse.json({ ok: true, status: "already_processed" }, { status: 200 });
         }
-        if (!in_stock) {
-            //abort transaction and issue refund since the order can not be fullfilled due to out of stock items
-            await db_session.abortTransaction();
-            db_session = null;
-            let instance = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_SECRET });
-            await instance.payments.refund(payment_id, {
-                "amount": orderData.total_amount * 100,
-                "speed": "normal",
-                "receipt": orderData._id
+
+        // 4. Handle Edge Case: Order was already expired before payment webhook arrived
+        if (orderData.active === "expired" || (orderData.expiresAt && new Date() > orderData.expiresAt)) {
+            // Issue automatic refund via Razorpay
+            const instance = new Razorpay({
+                key_id: process.env.RAZORPAY_KEY_ID,
+                key_secret: process.env.RAZORPAY_SECRET
             });
+
+            await instance.payments.refund(payment_id, {
+                amount: Math.round(orderData.total_amount * 100),
+                speed: "normal",
+                receipt: orderData._id.toString(),
+                notes: { reason: "Payment received after reservation expired." }
+            });
+
+            orderData.paymentId = payment_id;
+            orderData.refunded = true;
+            await orderData.save();
+
             sendNotiToSocketServerAndSave({
                 userId: orderData.user,
-                message: `Your order with receipt id: ${orderData._id} is cancelled. The money will be refunded within 5-7 working days.`,
+                message: `Payment for order #${orderData._id} was received after the reservation expired. The full amount has been refunded.`,
                 is_read: false
-            })
-            return NextResponse.json({ ok: false, status: "ok" }, { status: 200 });
+            });
+
+            return NextResponse.json({ ok: true, status: "refunded_due_to_expiry" }, { status: 200 });
         }
+
+        // 5. Normal Success Flow: Confirm Order
         orderData.paymentId = payment_id;
         orderData.paid = true;
         orderData.payment_failed = false;
         orderData.active = "active";
         orderData.status = "pending";
+        orderData.expiresAt = null; // Clear expiration timestamp
+
         await orderData.save();
-        await db_session.commitTransaction();
-        semaphoreForItem.release();
-        isLocked = false;
+
+        // 6. Real-time notifications and socket events
         itemUpdateSync();
-        db_session = null;
         sendEventToSocketServer("/api/order/new-order", { _id: orderData._id });
-        //for test mode.............................................................................................................................................
-        // transporter.sendMail({
-        //     from: 'Hungry Harbor', // sender address
-        //     to: "tonmoybiswas19122002@gmail.com", // list of receivers
-        //     subject: "New order.", // Subject line
-        //     // text: "Hello world?", // plain text body
-        //     html: `<b>A New Order Recieved. </b>`, // html body
-        // });
-        //.........................................................................................................................................................
+        sendNotiToSocketServerAndSave({
+            userId: orderData.user,
+            message: `Your order #${orderData._id} has been placed successfully!`,
+            is_read: false
+        });
+
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
-    }
-    catch (err) {
-        // console.log("error in payment capture", err);
-        try {
-            if (db_session) {
-                db_session.abortTransaction();
-            }
-            if (isLocked) {
-                semaphoreForItem.release();
-            }
-        }
-        finally {
-            return NextResponse.json({ ok: false, status: "ok" }, { status: 500 });
-        }
+
+    } catch (err) {
+        return NextResponse.json({ ok: false, status: "error", error: err.message }, { status: 500 });
     }
 }

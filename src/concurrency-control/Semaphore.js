@@ -1,3 +1,5 @@
+const SEMAPHORE_DISABLE=true;
+
 export default class Semaphore {
   constructor(maxConcurrency, timeout) {
     if (maxConcurrency <= 0) {
@@ -13,6 +15,10 @@ export default class Semaphore {
   // If the timeout is reached before a slot is available, resolves to false.
   acquire() {
     return new Promise((resolve) => {
+      if(SEMAPHORE_DISABLE){
+        return resolve(true);
+      }
+
       if (this.currentCount < this.maxConcurrency) {
         this.currentCount++;
         resolve(true);
@@ -31,6 +37,10 @@ export default class Semaphore {
 
   // Release a permit, waking up the next waiter (if any).
   release() {
+    if(SEMAPHORE_DISABLE){
+      return ;
+    }
+
     if (this.queue.length > 0) {
       const { next, timeoutId } = this.queue.shift();
       clearTimeout(timeoutId);
