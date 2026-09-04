@@ -33,8 +33,8 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, status: "order_not_found" }, { status: 200 });
         }
 
-        // 3. Idempotency Check: Already paid and active
-        if (orderData.paid && orderData.active === "active") {
+        // 3. Idempotency Check: Already paid
+        if (orderData.paid) {
             return NextResponse.json({ ok: true, status: "already_processed" }, { status: 200 });
         }
 
@@ -54,7 +54,7 @@ export async function POST(request) {
             });
 
             orderData.paymentId = payment_id;
-            orderData.refunded = true;
+            orderData.paid=true;
             await orderData.save();
 
             sendNotiToSocketServerAndSave({

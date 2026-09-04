@@ -44,7 +44,7 @@ export async function POST(request) {
         orderData.payment_failed = false;
         orderData.refundId=refund_id;
         orderData.refunded=true;
-        if(orderData.active!="expired"){
+        if(orderData.expiresAt==null){
             orderData.active="settled";
         }
         orderData.status="cancelled";

@@ -13,7 +13,6 @@ export async function GET(request) {
         // 1. Query initialized, unpaid orders that have passed their expiration timestamp
         const expiredOrders = await Orders.find({
             active: "initialized",
-            paid: false,
             expiresAt: { $lte: now }
         }).limit(50);
 

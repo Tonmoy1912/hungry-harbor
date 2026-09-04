@@ -10,7 +10,7 @@ import { mongoConnect } from "@/config/moongose";
 import { getOpeningTime } from "@/components/shop-open-close-components/shop-open-close-server-component";
 import { itemUpdateSync } from "@/util/item_update_sync";
 
-const RESERVATION_EXPIRY_MINUTES = 10;
+const RESERVATION_EXPIRY_MINUTES = Number(process.env.RESERVATION_EXPIRY_MINUTES??"10");
 
 export async function POST(request) {
     let db_session = null;
