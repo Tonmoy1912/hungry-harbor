@@ -17,7 +17,7 @@
 7. [API Layer Architecture](#7-api-layer-architecture)
 8. [Authentication & Authorization](#8-authentication--authorization)
 9. [Database Architecture](#9-database-architecture)
-10. [Payment Processing Pipeline](#10-payment-processing-pipeline)
+10. [Payment Processing & Concurrency Pipeline](#10-payment-processing--concurrency-pipeline)
 11. [Real-Time Communication (WebSocket)](#11-real-time-communication-websocket)
 12. [State Management](#12-state-management)
 13. [File Storage Architecture](#13-file-storage-architecture)
@@ -38,7 +38,8 @@
 | **User Authentication** | Credentials-based and Google OAuth sign-in via NextAuth.js |
 | **Menu Browsing** | Browse food items by categories with search, filtering, and sorting |
 | **Cart & Wishlist** | Add/remove items, stock validation before checkout |
-| **Online Payment** | Razorpay payment gateway with webhook-based capture and automated refunds |
+| **Online Payment & Concurrency** | Razorpay payment gateway with upfront atomic stock reservation, commit-before-network-call, webhook capture, late-payment race arbitration, and automated refunds |
+| **Stock Recovery (Cron)** | Automated background compensation cron (`/api/cron/restore-reserved-stocks`) that safely restores expired (10m TTL) or failed stock holds |
 | **Order Tracking** | Real-time order status updates via WebSocket (pending → accepted → ready → delivered) |
 | **Reviews & Ratings** | Users can submit, update, and delete reviews with star ratings |
 | **Notifications** | Real-time push notifications for order updates, delivered via Socket.io |
@@ -172,7 +173,7 @@ graph TB
 1. **Monolithic Full-Stack**: The application uses Next.js as both the frontend and backend, eliminating the need for a separate API server.
 2. **Separate Socket Server**: Real-time communication is handled by an **external Socket.io server** process, communicated with via HTTP POST from the Next.js API routes and WebSocket from the client.
 3. **Webhook-Driven Payments**: Razorpay payment confirmations arrive via webhook (`POST /api/payment/payment-capture`), decoupling payment processing from the user's session.
-4. **Database Transactions**: Critical operations like order creation and payment capture use MongoDB transactions (`startSession()` / `commitTransaction()`) to ensure data consistency.
+4. **In-Order Inventory Hold & Concurrency Control**: Ordering uses atomic conditional decrements (`$inc` with `{ in_stock: { $gte: qty } }`) inside MongoDB multi-document transactions. To avoid connection starvation during gateway latency, it uses a **Commit-Before-Network-Call** pattern, webhook idempotency to prevent duplicate capture, programmatic refunds for late payments on expired holds, and an automated background cron (`/api/cron/restore-reserved-stocks`) for self-healing inventory recovery (see [`CONCURRENCY_HANDLING.md`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/CONCURRENCY_HANDLING.md)).
 
 ---
 
@@ -370,6 +371,10 @@ graph LR
             P3["payment-failed"]
             P4["refund-processed"]
         end
+
+        subgraph Cron ["/api/cron"]
+            CR1["restore-reserved-stocks<br/>(Stock Recovery Cron)"]
+        end
         
         subgraph Others ["Other Routes"]
             C1["/api/category/*"]
@@ -388,6 +393,7 @@ graph LR
     style Items fill:#059669,color:#fff
     style Orders fill:#0369a1,color:#fff
     style Payment fill:#dc2626,color:#fff
+    style Cron fill:#0284c7,color:#fff
     style Others fill:#d97706,color:#fff
 ```
 
@@ -430,10 +436,11 @@ graph LR
 | | `/api/order/set/delivered` | POST | Admin | Mark order as delivered |
 | | `/api/order/set/ready` | POST | Admin | Mark order as ready |
 | | `/api/order/set/user-cancel-order` | POST | User | Cancel an order |
-| **Payment** | `/api/payment/create-order` | POST | User | Create Razorpay order |
-| | `/api/payment/payment-capture` | POST | Webhook | Razorpay payment success webhook |
+| **Payment** | `/api/payment/create-order` | POST | User | Atomic inventory hold (`$inc: -qty`), initialize order (10m TTL), create Razorpay order |
+| | `/api/payment/payment-capture` | POST | Webhook | Razorpay payment webhook (HMAC verification, idempotency gate, auto-refund on late arrival) |
 | | `/api/payment/payment-failed` | POST | Webhook | Razorpay payment failure webhook |
 | | `/api/payment/refund-processed` | POST | Webhook | Razorpay refund completion webhook |
+| **Cron** | `/api/cron/restore-reserved-stocks` | GET/POST | Cron / Secret | Batch restore reserved stocks for expired/cancelled orders (self-healing recovery) |
 | **Review** | `/api/review/get-all-review` | GET | — | Fetch all reviews for an item |
 | | `/api/review/get-user-review` | GET | User | Fetch user's review for an item |
 | | `/api/review/submit-review` | POST | User | Submit a new review |
@@ -582,6 +589,8 @@ erDiagram
         String cooking_inst_status
         String status
         String active
+        Date expiresAt
+        Boolean required_restoration
         String ready_by
     }
 
@@ -649,94 +658,144 @@ The `mongoConnect()` utility in `src/config/moongose.js` implements a **singleto
 
 ```mermaid
 stateDiagram-v2
-    [*] --> initialized: Order Created<br/>(create-order API)
-    
-    initialized --> active: Payment Captured<br/>(Razorpay Webhook)
-    initialized --> settled: Payment Failed /<br/>Stock Unavailable
+    [*] --> initialized : /api/payment/create-order\n(Stock reserved via $inc: -qty,\nexpiresAt set to now + 10m,\nrequired_restoration: true)
+
+    initialized --> active : /api/payment/payment-capture\n(Payment successful within 10m,\nexpiresAt cleared,\npaid: true)
+
+    initialized --> failed : Gateway initialization error\n(required_restoration: true)
+
+    initialized --> expired : /api/cron/restore-reserved-stocks\n(expiresAt <= now,\nStock returned via $inc: +qty,\nrequired_restoration: false)
+
+    failed --> expired : /api/cron/restore-reserved-stocks\n(Stock returned via $inc: +qty,\nrequired_restoration: false)
+
+    expired --> expired : Late webhook arrives\n(Auto-refund issued via Razorpay,\norder.paid = true)
 
     state active {
-        pending --> accepted: Admin Accepts
-        pending --> cancelled: User Cancels /<br/>Admin Rejects
-        accepted --> ready: Admin Marks Ready
-        ready --> delivered: Admin Marks Delivered
+        pending --> accepted : Admin Accepts
+        pending --> cancelled : User Cancels / Admin Rejects
+        accepted --> ready : Admin Marks Ready
+        ready --> delivered : Admin Marks Delivered
     }
 
-    active --> settled: Order Delivered /<br/>Order Cancelled
-
-    note right of initialized
-        active="initialized"
-        paid=false
-    end note
-
-    note right of active
-        active="active"
-        paid=true (online)
-    end note
-
-    note right of settled
-        active="settled"
-    end note
+    active --> settled : Order Delivered / Order Cancelled
+    expired --> [*]
+    settled --> [*]
 ```
 
-The `Orders` collection tracks two dimensions of state:
-1. **`active`** field: Lifecycle stage (`initialized` → `active` → `settled`)
-2. **`status`** field: Order progress (`pending` → `accepted` → `ready` → `delivered` or `cancelled`)
+The `Orders` collection tracks multi-dimensional state with concurrency & recovery safeguards:
+1. **`active`** field: Lifecycle stage (`initialized` → `active` → `settled` | `failed` | `expired`)
+2. **`status`** field: Order workflow state (`pending` → `accepted` → `ready` → `delivered` or `cancelled`)
+3. **`expiresAt`**: 10-minute reservation TTL timestamp used to arbitrate late payments and cron sweeps
+4. **`required_restoration`**: Idempotency guard guaranteeing inventory is restored at most once
+5. **Compound Indexes**: Optimizes high-throughput cron scanning:
+   - `{ required_restoration: 1, active: 1, expiresAt: 1 }`
+   - `{ required_restoration: 1, status: 1 }`
+   - `{ active: 1, expiresAt: 1 }`
 
 ---
 
-## 10. Payment Processing Pipeline
+## 10. Payment Processing & Concurrency Pipeline
+
+> 📖 **Full Specification**: For detailed code implementations, transaction boundary breakdowns, and race condition mitigations, see [`CONCURRENCY_HANDLING.md`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/CONCURRENCY_HANDLING.md).
+
+Hungry Harbor implements an **In-Order Inventory Hold Strategy** paired with **ACID Database Transactions**, **Atomic Conditional Writes**, **Commit-Before-Network Calls**, **Webhook Idempotency Gates**, and an **Eventual Consistency Compensation Cron**.
+
+### End-to-End Concurrency & Payment Lifecycle
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant NextApp as Next.js Server
-    participant Razorpay
-    participant MongoDB
-    participant SocketServer as Socket.io Server
+    autonumber
+    actor User as Customer
+    participant OrderAPI as /api/payment/create-order
+    participant DB as MongoDB (Replica Set)
+    participant Gateway as Razorpay API
+    participant CaptureAPI as /api/payment/payment-capture
+    participant Cron as /api/cron/restore-reserved-stocks
+    participant Sockets as WebSocket / itemUpdateSync
 
-    Note over User, SocketServer: Order Creation & Payment Flow
-    
-    User->>NextApp: POST /api/payment/create-order<br/>{items, cooking_instruction}
-    NextApp->>NextApp: Check shop open status
-    NextApp->>MongoDB: Start Transaction
-    NextApp->>MongoDB: Validate stock for each item
-    alt Stock Insufficient
-        NextApp-->>User: 400 {message: "Only X in stock"}
+    %% 1. Order Creation & Stock Reservation
+    User->>OrderAPI: POST /api/payment/create-order (items, cooking_instruction)
+    Note over OrderAPI,DB: Multi-document Transaction Started
+    OrderAPI->>DB: Atomically check & decrement stock ($inc: -qty WHERE in_stock >= qty)
+    alt Any Item Insufficient Stock
+        OrderAPI->>DB: Abort Transaction
+        OrderAPI-->>User: 400 Bad Request ("Only X left in stock")
+    else All Items Available
+        OrderAPI->>DB: Create Order (active: "initialized", required_restoration: true, expiresAt: now + 10m)
+        OrderAPI->>DB: Commit Transaction
+        OrderAPI->>Sockets: itemUpdateSync() (Broadcast remaining stock)
     end
-    NextApp->>Razorpay: razorpay.orders.create({amount, currency})
-    Razorpay-->>NextApp: Razorpay Order Object
-    NextApp->>MongoDB: Save Order (active="initialized")
-    NextApp->>MongoDB: Commit Transaction
-    NextApp-->>User: {order, user, razorpay_key}
 
-    User->>Razorpay: Complete Payment (Client SDK)
-
-    Note over Razorpay, SocketServer: Webhook - Payment Captured
-    Razorpay->>NextApp: POST /api/payment/payment-capture<br/>(x-razorpay-signature header)
-    NextApp->>NextApp: HMAC-SHA256 signature verification
-    NextApp->>MongoDB: Start Transaction
-    NextApp->>MongoDB: Verify stock & deduct quantities
-    alt Stock Unavailable After Payment
-        NextApp->>Razorpay: Issue automatic refund
-        NextApp->>NextApp: Send cancellation notification
-        NextApp-->>Razorpay: 200 OK
+    %% 2. Gateway Order Creation
+    OrderAPI->>Gateway: razorpay.orders.create({ amount, receipt: order._id })
+    alt Gateway Network Failure
+        OrderAPI->>DB: Set active: "failed", status: "cancelled", required_restoration: true
+        OrderAPI-->>User: 502 Bad Gateway
+    else Gateway Success
+        OrderAPI->>DB: Update order with orderId = razorpayOrder.id
+        OrderAPI-->>User: 200 OK (Razorpay order payload, key, expiresAt)
     end
-    NextApp->>MongoDB: Update Order (active="active", paid=true)
-    NextApp->>MongoDB: Commit Transaction
-    NextApp->>SocketServer: POST /api/order/new-order
-    SocketServer-->>User: WebSocket "newOrder" event
-    NextApp->>SocketServer: POST /api/items/item-update
-    NextApp-->>Razorpay: 200 OK
+
+    %% 3. Payment Flow & Capture
+    User->>Gateway: Submits Payment on Razorpay Modal
+    Gateway->>CaptureAPI: POST Webhook (payment.captured)
+    Note over CaptureAPI: Verify HMAC-SHA256 Signature
+    alt Order is Paid (Idempotent replay)
+        CaptureAPI-->>Gateway: 200 OK (already_processed)
+    else Order is Expired (Late payment race condition)
+        CaptureAPI->>Gateway: payments.refund(payment_id, amount)
+        CaptureAPI->>DB: Mark paid: true, record paymentId
+        CaptureAPI-->>Gateway: 200 OK (refunded_due_to_expiry)
+    else Normal Success (Within 10 min window)
+        CaptureAPI->>DB: Mark active: "active", paid: true, expiresAt: null
+        CaptureAPI->>Sockets: itemUpdateSync() & sendEventToSocketServer
+        CaptureAPI-->>Gateway: 200 OK
+    end
+
+    %% 4. Cron Recovery (For Abandoned Orders)
+    loop Periodic Cron Run (e.g., every minute)
+        Cron->>DB: Find orders WHERE required_restoration: true AND (expiresAt <= now OR cancelled OR failed)
+        loop For Each Expired/Failed Order
+            Note over Cron,DB: Transaction per Order
+            Cron->>DB: Atomically increment stock ($inc: +qty)
+            Cron->>DB: Set active: "expired", status: "cancelled", required_restoration: false
+            Cron->>DB: Commit Transaction
+        end
+        Cron->>Sockets: itemUpdateSync() (Broadcast restored stock)
+    end
 ```
 
-### Payment Security
+### Core Concurrency Mechanisms
 
-| Mechanism | Description |
-|---|---|
-| **HMAC Verification** | Razorpay webhook payloads are verified using HMAC-SHA256 with `RAZORPAY_WEBHOOK_SECRET` |
-| **DB Transactions** | Stock deduction and order updates are wrapped in MongoDB transactions |
-| **Automatic Refunds** | If stock becomes unavailable between order creation and payment capture, a refund is automatically issued |
-| **Always 200 OK** | The webhook handler always returns `200 OK` to prevent Razorpay from retrying |
+#### 1. Order Initialization & Atomic Reservation (`/api/payment/create-order`)
+- **Atomic Conditional Decrement**: Stock is held upfront using `Items.findOneAndUpdate({ _id: itemId, in_stock: { $gte: requestedQty }, removed: { $ne: true } }, { $inc: { in_stock: -requestedQty } }, { session, new: true })`. This completely prevents **Time-of-Check to Time-of-Use (TOCTOU)** race conditions and overselling.
+- **Cart-Level All-or-Nothing Guarantee**: If any item has insufficient stock, the multi-document transaction is aborted, immediately rolling back any previously decremented items in the cart.
+- **Commit-Before-Network-Call Pattern**: The database transaction is committed and session closed **prior** to calling external payment gateway APIs (`razorpay.orders.create`). This prevents connection pool exhaustion and database lock starvation during third-party network latency.
+- **Post-Commit Failure Recovery**: If the gateway network request fails, the order is flagged with `active: "failed"`, `status: "cancelled"`, and `required_restoration: true`, allowing the background compensation engine to safely release the held inventory.
+
+#### 2. Webhook Verification, Idempotency & Late-Payment Arbitration (`/api/payment/payment-capture`)
+- **HMAC-SHA256 Signature Verification**: Every webhook payload is verified cryptographically using `createHmac('sha256', secret)` before database access.
+- **Idempotency Gate**: Replayed or duplicate webhooks check `if (orderData.paid)` and immediately return `200 OK (already_processed)` to avoid duplicate processing.
+- **Late-Payment Arbitration & Auto-Refund**: If a user pays after the 10-minute hold expired (`orderData.active === "expired"` or `expiresAt <= now`), the server refuses order fulfillment and immediately triggers a programmatic refund via Razorpay (`instance.payments.refund`). This prevents overselling when expired stock has already been purchased by another customer.
+- **Fulfillment Without Secondary Stock Check**: Because stock was secured upfront in `create-order`, the capture route safely activates the order (`active: "active"`, `paid: true`, `expiresAt: null`) without risking out-of-stock failures at completion.
+
+#### 3. Self-Healing Stock Restoration Cron (`/api/cron/restore-reserved-stocks`)
+- **Scheduled Eventual Consistency**: Periodically queries orders with `required_restoration: true` that have expired (`expiresAt <= now`) or failed.
+- **Isolated Per-Order Transactions**: Atomically increments stock (`$inc: { in_stock: qty }`), transitions the order to `active: "expired"`, `status: "cancelled"`, and clears `required_restoration: false`.
+- **Live UI Broadcast**: Calls `itemUpdateSync()` after releasing stock to immediately notify connected clients via WebSockets and re-enable purchase controls.
+
+### Concurrency Patterns Matrix
+
+| Pattern / Mechanism | Where Applied | Problem Solved |
+| :--- | :--- | :--- |
+| **Atomic Conditional Write (`$inc` + `$gte`)** | `create-order` | Prevents overselling and negative inventory across simultaneous concurrent purchases. |
+| **Multi-Document ACID Transactions** | `create-order`, `restore-reserved-stocks` | Guarantees all-or-nothing atomicity across multiple distinct items in a cart. |
+| **Commit-Before-Network Call** | `create-order` | Eliminates long-held database locks and prevents connection starvation during external payment gateway latency. |
+| **HMAC-SHA256 Webhook Verification** | `payment-capture` | Prevents unauthorized / spoofed payment confirmation requests. |
+| **Idempotency Gate (`if (order.paid)`)** | `payment-capture` | Prevents duplicate order processing and multiple notifications on webhook retries. |
+| **Compensating Refund on Late Arrival** | `payment-capture` | Resolves race condition between reservation expiration and late customer payment. |
+| **Idempotent Flagging (`required_restoration`)** | `restore-reserved-stocks` | Ensures inventory cannot be double-incremented during periodic cron runs or server restarts. |
+| **Real-Time Inventory Broadcast (`itemUpdateSync`)** | All 3 routes | Keeps client UIs synchronized with live stock levels to reduce failed checkout attempts. |
 
 ---
 
@@ -1068,20 +1127,28 @@ sequenceDiagram
     
     User->>UI: Click "Place Order"
     UI->>API: POST /api/payment/create-order
-    API->>DB: Validate stock (Transaction)
-    API->>RP: Create Razorpay order
-    RP-->>API: Order ID
-    API->>DB: Save Order (initialized)
-    API-->>UI: Razorpay order details
+    Note over API,DB: Multi-document Transaction
+    API->>DB: Atomically reserve stock ($inc: -qty WHERE in_stock >= qty)
+    API->>DB: Save Order (active: "initialized", required_restoration: true, expiresAt: now + 10m)
+    API->>DB: Commit Transaction (Releases DB locks)
+    API->>SS: Broadcast updated stock (itemUpdateSync)
+    API->>RP: razorpay.orders.create({ amount, receipt })
+    RP-->>API: Razorpay Order Object
+    API->>DB: Update order with Razorpay orderId
+    API-->>UI: Razorpay order details & key
 
-    UI->>RP: Open Razorpay checkout
-    User->>RP: Complete payment
-    RP->>API: Webhook: payment-capture
-    API->>API: Verify HMAC signature
-    API->>DB: Deduct stock (Transaction)
-    API->>DB: Update Order (active, paid)
-    API->>SS: HTTP POST: new-order event
-    SS-->>UI: WebSocket: "newOrder"
+    UI->>RP: Open checkout modal & complete payment
+    RP->>API: Webhook: POST /api/payment/payment-capture
+    API->>API: Verify HMAC-SHA256 signature & check idempotency (if order.paid)
+    alt Captured within 10 min window
+        API->>DB: Update Order (active: "active", paid: true, expiresAt: null)
+        API->>SS: HTTP POST: new-order event & itemUpdateSync
+        SS-->>UI: WebSocket: "newOrder"
+    else Expired reservation (Late webhook arrival)
+        API->>RP: Programmatic auto-refund (payments.refund)
+        API->>DB: Mark paid: true, record paymentId
+        API->>SS: WebSocket notification (Auto-refunded due to expiry)
+    end
 
     Note over User, SS: Admin Processes Order
     SS-->>UI: WebSocket: "acceptOrder"

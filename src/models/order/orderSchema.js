@@ -13,7 +13,8 @@ const orderSchema = new mongoose.Schema({
     }],
     orderId: {
         type: String,
-        default: null
+        default: null,
+        index: true
     },
     paymentId: {
         type: String,
@@ -63,12 +64,29 @@ const orderSchema = new mongoose.Schema({
     },
     active:{
         type: String,
-        default:"initialized"//initialized, active, settled
+        enum: ["initialized", "active", "settled", "expired", "failed"],
+        default:"initialized",
+        index: true
+    },
+    expiresAt: {
+        type: Date,
+        default: null,
+        index: true
     },
     ready_by:{
         type: String
+    },
+    required_restoration: {
+        type: Boolean,
+        default: true,
+        index: true
     }
 });
+
+// Compound indexes for fast cron job lookups
+orderSchema.index({ required_restoration: 1, active: 1, expiresAt: 1 });
+orderSchema.index({ required_restoration: 1, status: 1 });
+orderSchema.index({ active: 1, expiresAt: 1 });
 
 //active=active and paid=false --> cash on delivery
 
