@@ -90,7 +90,8 @@ export async function POST(request) {
             expiresAt: expiresAt,
             active: "initialized",
             status: "pending",
-            paid: false
+            paid: false,
+            required_restoration: true
         });
 
         await orderData.save({ session: db_session });
@@ -122,16 +123,14 @@ export async function POST(request) {
                 throw new Error(razorpayOrder?.error?.description || "Razorpay order creation failed");
             }
         } catch (gatewayErr) {
-            // Immediate compensation: Roll back stock and mark order failed
-            for (const item of reservedItems) {
-                await Items.findByIdAndUpdate(item.itemId, { $inc: { in_stock: item.quantity } });
-            }
-            await Orders.findByIdAndUpdate(createdOrderId, { $set: { active: "failed", status: "cancelled" } });
-            itemUpdateSync();
+            // Mark order as failed and cancelled with required_restoration; release cron will restore stock
+            await Orders.findByIdAndUpdate(createdOrderId, {
+                $set: { active: "failed", status: "cancelled", required_restoration: true }
+            });
 
             return NextResponse.json({
                 ok: false,
-                message: "Unable to initialize payment gateway. Stock has been restored.",
+                message: "Unable to initialize payment gateway. Order cancelled.",
                 error: gatewayErr.message
             }, { status: 502 });
         }

@@ -30,6 +30,7 @@ export async function POST(request) {
         }
         order.status = "delivered";
         order.active = "settled";
+        order.required_restoration = false;
         await order.save();
         sendNotiToSocketServerAndSave({
             userId: order.user,

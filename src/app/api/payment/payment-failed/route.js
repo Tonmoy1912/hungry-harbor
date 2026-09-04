@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import Items from "@/models/item/itemSchema";
 import mongoose from "mongoose";
 import Orders from "@/models/order/orderSchema";
 import { headers } from "next/headers";
 import { createHmac } from "crypto";
 import { mongoConnect } from "@/config/moongose";
-import { itemUpdateSync } from "@/util/item_update_sync";
 
 export async function POST(request) {
     let db_session = null;
@@ -33,28 +31,18 @@ export async function POST(request) {
             return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
         }
 
-        // Restore reserved item stock
-        for (let x of orderData.items) {
-            await Items.findByIdAndUpdate(
-                x.item,
-                { $inc: { in_stock: x.quantity } },
-                { session: db_session }
-            );
-        }
-
         orderData.paymentId = payment_id;
         orderData.paid = false;
         orderData.payment_failed = true;
         orderData.active = "failed";
         orderData.status = "cancelled";
         orderData.expiresAt = null;
+        orderData.required_restoration = true;
 
         await orderData.save({ session: db_session });
         await db_session.commitTransaction();
         db_session.endSession();
         db_session = null;
-
-        itemUpdateSync();
 
         return NextResponse.json({ ok: true, status: "ok" }, { status: 200 });
     } catch (err) {

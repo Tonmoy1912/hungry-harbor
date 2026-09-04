@@ -75,10 +75,17 @@ const orderSchema = new mongoose.Schema({
     },
     ready_by:{
         type: String
+    },
+    required_restoration: {
+        type: Boolean,
+        default: true,
+        index: true
     }
 });
 
-// Compound index for fast cron job lookups
+// Compound indexes for fast cron job lookups
+orderSchema.index({ required_restoration: 1, active: 1, expiresAt: 1 });
+orderSchema.index({ required_restoration: 1, status: 1 });
 orderSchema.index({ active: 1, expiresAt: 1 });
 
 //active=active and paid=false --> cash on delivery
