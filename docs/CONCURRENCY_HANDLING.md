@@ -2,9 +2,9 @@
 
 This document provides a comprehensive technical breakdown of how **Hungry Harbor** manages high-concurrency ordering, inventory locking, race conditions, idempotency, and automated stock recovery across three critical routes:
 
-1. **Order Initialization & Inventory Hold**: [`create-order/route.js`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/src/app/api/payment/create-order/route.js)
-2. **Webhook Verification & Idempotent Capture**: [`payment-capture/route.js`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/src/app/api/payment/payment-capture/route.js)
-3. **Automated Stock Restoration & Self-Healing Cron**: [`restore-reserved-stocks/route.js`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/src/app/api/cron/restore-reserved-stocks/route.js)
+1. **Order Initialization & Inventory Hold**: [`create-order/route.js`](./../src/app/api/payment/create-order/route.js)
+2. **Webhook Verification & Idempotent Capture**: [`payment-capture/route.js`](./../src/app/api/payment/payment-capture/route.js)
+3. **Automated Stock Restoration & Self-Healing Cron**: [`restore-reserved-stocks/route.js`](./../src/app/api/cron/restore-reserved-stocks/route.js)
 
 ---
 
@@ -79,7 +79,7 @@ sequenceDiagram
 
 ## 2. Deep-Dive: Concurrency Handling in Each Component
 
-### A. [`create-order/route.js`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/src/app/api/payment/create-order/route.js) — Atomic Stock Reservation
+### A. [`create-order/route.js`](./../src/app/api/payment/create-order/route.js) — Atomic Stock Reservation
 
 #### 1. Preventing Race Conditions & Overselling (Atomic Conditional Updates)
 Traditional read-then-write patterns (`find()` then calculate then `save()`) introduce a **Time-of-Check to Time-of-Use (TOCTOU)** race condition when multiple users attempt to buy the same item concurrently.
@@ -125,7 +125,7 @@ Holding database locks/transactions across long third-party network calls (like 
 
 ---
 
-### B. [`payment-capture/route.js`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/src/app/api/payment/payment-capture/route.js) — Webhook Idempotency & Late-Arrival Arbitration
+### B. [`payment-capture/route.js`](./../src/app/api/payment/payment-capture/route.js) — Webhook Idempotency & Late-Arrival Arbitration
 
 Payment gateways deliver webhooks asynchronously and may retry notifications multiple times. The capture route implements robust concurrency and edge-case guards:
 
@@ -173,7 +173,7 @@ When captured within the valid reservation window:
 
 ---
 
-### C. [`restore-reserved-stocks/route.js`](file:///Users/tonmoybiswas/Drive%20D/Web%20Development/Hungry%20Harbor/hungry-harbor/src/app/api/cron/restore-reserved-stocks/route.js) — Self-Healing Stock Compensation Engine
+### C. [`restore-reserved-stocks/route.js`](./../src/app/api/cron/restore-reserved-stocks/route.js) — Self-Healing Stock Compensation Engine
 
 When users abandon the payment popup, close their browser, or experience gateway drops, held inventory must not remain permanently locked.
 
