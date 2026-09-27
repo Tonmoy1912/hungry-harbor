@@ -39,7 +39,8 @@ export async function POST(request) {
         }
 
         // 4. Handle Edge Case: Order was already expired before payment webhook arrived
-        if (orderData.active === "expired" || (orderData.expiresAt && new Date() > orderData.expiresAt)) {
+        // Keeping 1 min in reserve so that expiration clean up and payment capture poccess don't collide
+        if (orderData.active === "expired" || (orderData.expiresAt && new Date(Date.now() + 1 * 60 * 1000) > orderData.expiresAt)) {
             // Issue automatic refund via Razorpay
             const instance = new Razorpay({
                 key_id: process.env.RAZORPAY_KEY_ID,
